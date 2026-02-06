@@ -84,6 +84,41 @@ interface DistributionResult {
   }>;
 }
 
+interface PodcastResult {
+  success: boolean;
+  episode: {
+    title: string;
+    description: string;
+    audioUrl: string;
+    pubDate: string;
+    guid: string;
+  };
+  feed: {
+    title: string;
+    author: string;
+  };
+  submitTo: Array<{
+    name: string;
+    url: string;
+  }>;
+  instructions: string;
+}
+
+interface PRResult {
+  success: boolean;
+  pressRelease: {
+    headline: string;
+    body: string;
+    date: string;
+    contact: string;
+  };
+  distribution: {
+    free: Array<{ name: string; url: string; cost: string }>;
+    paid: Array<{ name: string; url: string; cost: string }>;
+  };
+  instructions: string;
+}
+
 // All 16 content formats
 const contentTypes = [
   { key: "headlines", label: "Headlines", icon: TrendingUp, color: "text-amber-500", category: "SEO" },
@@ -127,12 +162,23 @@ export default function Home() {
   const [contentResult, setContentResult] = useState<ContentResult | null>(null);
   const [selectedContent, setSelectedContent] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"generate" | "distribute">("generate");
+  const [activeTab, setActiveTab] = useState<"generate" | "distribute" | "podcast" | "pr">("generate");
 
   // Distribution state
   const [isDistributing, setIsDistributing] = useState(false);
   const [distributionResult, setDistributionResult] = useState<DistributionResult | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["all"]);
+
+  // Podcast state
+  const [podcastName, setPodcastName] = useState("TownsHub Podcast");
+  const [podcastAuthor, setPodcastAuthor] = useState("");
+  const [isPodcastLoading, setIsPodcastLoading] = useState(false);
+  const [podcastResult, setPodcastResult] = useState<PodcastResult | null>(null);
+
+  // PR state
+  const [contactEmail, setContactEmail] = useState("");
+  const [isPRLoading, setIsPRLoading] = useState(false);
+  const [prResult, setPRResult] = useState<PRResult | null>(null);
 
   // Chat state
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -220,6 +266,63 @@ export default function Home() {
     await navigator.clipboard.writeText(content);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const handlePodcast = async () => {
+    if (!contentResult?.content) return;
+
+    setIsPodcastLoading(true);
+    setPodcastResult(null);
+
+    try {
+      const response = await fetch("/api/podcast", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: contentResult.topic,
+          content: contentResult.content,
+          podcastName,
+          author: podcastAuthor,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setPodcastResult(data);
+      }
+    } catch (error) {
+      console.error("Podcast error:", error);
+    } finally {
+      setIsPodcastLoading(false);
+    }
+  };
+
+  const handlePR = async () => {
+    if (!contentResult?.content) return;
+
+    setIsPRLoading(true);
+    setPRResult(null);
+
+    try {
+      const response = await fetch("/api/pr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: contentResult.topic,
+          content: contentResult.content,
+          contactEmail,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setPRResult(data);
+      }
+    } catch (error) {
+      console.error("PR error:", error);
+    } finally {
+      setIsPRLoading(false);
+    }
   };
 
   const handleSendMessage = async () => {
@@ -327,28 +430,50 @@ export default function Home() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           <button
             onClick={() => setActiveTab("generate")}
-            className={`flex-1 sm:flex-none px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 sm:flex-none px-4 sm:px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
               activeTab === "generate"
                 ? "bg-gradient-to-r from-brand-500 to-accent-purple text-white shadow-lg"
                 : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
             }`}
           >
             <Sparkles className="w-5 h-5" />
-            Generate Content
+            <span className="hidden sm:inline">Generate</span>
           </button>
           <button
             onClick={() => setActiveTab("distribute")}
-            className={`flex-1 sm:flex-none px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 sm:flex-none px-4 sm:px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
               activeTab === "distribute"
                 ? "bg-gradient-to-r from-brand-500 to-accent-purple text-white shadow-lg"
                 : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
             }`}
           >
             <Globe className="w-5 h-5" />
-            Distribute to 300+ Sites
+            <span className="hidden sm:inline">Distribute</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("podcast")}
+            className={`flex-1 sm:flex-none px-4 sm:px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+              activeTab === "podcast"
+                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+                : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+            }`}
+          >
+            <Mic className="w-5 h-5" />
+            <span className="hidden sm:inline">Podcast</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("pr")}
+            className={`flex-1 sm:flex-none px-4 sm:px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+              activeTab === "pr"
+                ? "bg-gradient-to-r from-rose-500 to-red-500 text-white shadow-lg"
+                : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+            }`}
+          >
+            <Newspaper className="w-5 h-5" />
+            <span className="hidden sm:inline">Press Release</span>
           </button>
         </div>
 
@@ -648,6 +773,249 @@ export default function Home() {
                 <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
                   <p className="text-sm text-amber-800">
                     <strong>Note:</strong> This is a distribution plan. To publish content automatically, configure platform credentials in your n8n instance for each platform you want to automate.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Podcast Tab */}
+        {activeTab === "podcast" && (
+          <div className="space-y-8">
+            <div className="glass rounded-3xl p-6 sm:p-8">
+              <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+                <Mic className="w-5 h-5 text-purple-500" />
+                Podcast RSS Generator
+              </h3>
+              <p className="text-slate-600 mb-6">
+                Generate podcast metadata and get submission links for 8+ major podcast directories.
+              </p>
+
+              {!contentResult ? (
+                <div className="text-center py-12 bg-slate-50 rounded-2xl">
+                  <Mic className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+                  <h4 className="text-lg font-semibold text-slate-700 mb-2">No Content Generated Yet</h4>
+                  <p className="text-slate-500 mb-4">Generate content first to create podcast episodes.</p>
+                  <button
+                    onClick={() => setActiveTab("generate")}
+                    className="px-6 py-2 rounded-xl bg-purple-500 text-white font-medium hover:bg-purple-600 transition-colors"
+                  >
+                    Go to Content Generator
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="grid sm:grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Podcast Name</label>
+                      <input
+                        type="text"
+                        value={podcastName}
+                        onChange={(e) => setPodcastName(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Author Name</label>
+                      <input
+                        type="text"
+                        value={podcastAuthor}
+                        onChange={(e) => setPodcastAuthor(e.target.value)}
+                        placeholder="Your name or company"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handlePodcast}
+                    disabled={isPodcastLoading}
+                    className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isPodcastLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Rss className="w-5 h-5" />
+                        Generate Podcast Metadata
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
+            </div>
+
+            {podcastResult && (
+              <div className="glass rounded-3xl p-6 sm:p-8">
+                <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  Podcast Episode Ready
+                </h3>
+
+                <div className="bg-slate-50 rounded-2xl p-6 mb-6">
+                  <h4 className="font-semibold text-slate-900 mb-2">{podcastResult.episode.title}</h4>
+                  <p className="text-sm text-slate-600 mb-4">{podcastResult.episode.description}</p>
+                  <div className="flex flex-wrap gap-4 text-sm text-slate-500">
+                    <span>Feed: {podcastResult.feed.title}</span>
+                    <span>Author: {podcastResult.feed.author}</span>
+                  </div>
+                </div>
+
+                <h4 className="font-semibold text-slate-900 mb-4">Submit to Podcast Directories</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {podcastResult.submitTo.map((dir, idx) => (
+                    <a
+                      key={idx}
+                      href={dir.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-3 bg-white rounded-xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-colors"
+                    >
+                      <Mic className="w-4 h-4 text-purple-500" />
+                      <span className="text-sm font-medium text-slate-700">{dir.name}</span>
+                    </a>
+                  ))}
+                </div>
+
+                <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-xl">
+                  <p className="text-sm text-purple-800">
+                    <strong>Next Steps:</strong> {podcastResult.instructions}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* PR Tab */}
+        {activeTab === "pr" && (
+          <div className="space-y-8">
+            <div className="glass rounded-3xl p-6 sm:p-8">
+              <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+                <Newspaper className="w-5 h-5 text-rose-500" />
+                Press Release Distributor
+              </h3>
+              <p className="text-slate-600 mb-6">
+                Format your press release and get distribution links for free and paid PR services.
+              </p>
+
+              {!contentResult ? (
+                <div className="text-center py-12 bg-slate-50 rounded-2xl">
+                  <Newspaper className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+                  <h4 className="text-lg font-semibold text-slate-700 mb-2">No Content Generated Yet</h4>
+                  <p className="text-slate-500 mb-4">Generate content first to create press releases.</p>
+                  <button
+                    onClick={() => setActiveTab("generate")}
+                    className="px-6 py-2 rounded-xl bg-rose-500 text-white font-medium hover:bg-rose-600 transition-colors"
+                  >
+                    Go to Content Generator
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Contact Email (for press inquiries)</label>
+                    <input
+                      type="email"
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      placeholder="press@yourcompany.com"
+                      className="w-full sm:w-1/2 px-4 py-3 rounded-xl border border-slate-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all outline-none"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handlePR}
+                    disabled={isPRLoading}
+                    className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-rose-500 to-red-500 text-white font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isPRLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Preparing...
+                      </>
+                    ) : (
+                      <>
+                        <Newspaper className="w-5 h-5" />
+                        Prepare Press Release
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
+            </div>
+
+            {prResult && (
+              <div className="glass rounded-3xl p-6 sm:p-8">
+                <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  Press Release Ready
+                </h3>
+
+                <div className="bg-slate-50 rounded-2xl p-6 mb-6">
+                  <h4 className="font-bold text-slate-900 text-lg mb-2">{prResult.pressRelease.headline}</h4>
+                  <p className="text-xs text-slate-500 mb-4">{prResult.pressRelease.date} | Contact: {prResult.pressRelease.contact}</p>
+                  <p className="text-sm text-slate-700 whitespace-pre-wrap">{prResult.pressRelease.body}</p>
+                  <button
+                    onClick={() => handleCopy("pr", `${prResult.pressRelease.headline}\n\n${prResult.pressRelease.date}\n\n${prResult.pressRelease.body}`)}
+                    className="mt-4 flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors text-sm"
+                  >
+                    {copiedKey === "pr" ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-slate-500" />}
+                    Copy Press Release
+                  </button>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                      <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full">FREE</span>
+                      Free Distribution Services
+                    </h4>
+                    <div className="space-y-2">
+                      {prResult.distribution.free.map((service, idx) => (
+                        <a
+                          key={idx}
+                          href={service.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
+                        >
+                          <span className="text-sm font-medium text-slate-700">{service.name}</span>
+                          <span className="text-xs text-emerald-600">{service.cost}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                      <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full">PAID</span>
+                      Premium Distribution Services
+                    </h4>
+                    <div className="space-y-2">
+                      {prResult.distribution.paid.map((service, idx) => (
+                        <a
+                          key={idx}
+                          href={service.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200 hover:border-amber-300 hover:bg-amber-50 transition-colors"
+                        >
+                          <span className="text-sm font-medium text-slate-700">{service.name}</span>
+                          <span className="text-xs text-amber-600">{service.cost}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 p-4 bg-rose-50 border border-rose-200 rounded-xl">
+                  <p className="text-sm text-rose-800">
+                    <strong>Tip:</strong> {prResult.instructions}
                   </p>
                 </div>
               </div>
