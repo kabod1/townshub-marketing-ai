@@ -18,6 +18,17 @@ import {
   MessageSquare,
   X,
   Menu,
+  Search,
+  BookOpen,
+  Image,
+  Mail,
+  Newspaper,
+  PlayCircle,
+  Radio,
+  Rss,
+  Upload,
+  CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
 
 interface Message {
@@ -48,20 +59,64 @@ interface ContentResult {
   };
 }
 
+interface DistributionResult {
+  success: boolean;
+  totalPlatformsAvailable: number;
+  totalPlatformsQueued: number;
+  categoryCounts: {
+    social: number;
+    blogs: number;
+    video: number;
+    podcast: number;
+    documents: number;
+    news: number;
+    news_aggregators: number;
+    email: number;
+    syndication: number;
+    directories: number;
+    bookmarking: number;
+  };
+  platforms: Array<{
+    platform: string;
+    category: string;
+    contentType: string;
+    status: string;
+  }>;
+}
+
+// All 16 content formats
 const contentTypes = [
-  { key: "headlines", label: "Headlines", icon: TrendingUp, color: "text-amber-500" },
-  { key: "article", label: "Article", icon: FileText, color: "text-blue-500" },
-  { key: "blogPost", label: "Blog Post", icon: FileText, color: "text-indigo-500" },
-  { key: "linkedin", label: "LinkedIn", icon: Share2, color: "text-sky-600" },
-  { key: "twitterThread", label: "Twitter Thread", icon: MessageSquare, color: "text-cyan-500" },
-  { key: "facebook", label: "Facebook", icon: Share2, color: "text-blue-600" },
-  { key: "instagram", label: "Instagram", icon: Share2, color: "text-pink-500" },
-  { key: "newsletter", label: "Newsletter", icon: FileText, color: "text-emerald-500" },
-  { key: "podcast", label: "Podcast Script", icon: Mic, color: "text-purple-500" },
-  { key: "pressRelease", label: "Press Release", icon: Globe, color: "text-rose-500" },
-  { key: "longVideo", label: "Long Video", icon: Video, color: "text-red-500" },
-  { key: "shortVideo", label: "Short Video", icon: Video, color: "text-orange-500" },
-  { key: "infographic", label: "Infographic", icon: TrendingUp, color: "text-teal-500" },
+  { key: "headlines", label: "Headlines", icon: TrendingUp, color: "text-amber-500", category: "SEO" },
+  { key: "seoKeywords", label: "SEO Keywords", icon: Search, color: "text-lime-500", category: "SEO" },
+  { key: "metaDescription", label: "Meta Description", icon: FileText, color: "text-slate-500", category: "SEO" },
+  { key: "article", label: "Article", icon: FileText, color: "text-blue-500", category: "Written" },
+  { key: "blogPost", label: "Blog Post", icon: BookOpen, color: "text-indigo-500", category: "Written" },
+  { key: "linkedin", label: "LinkedIn", icon: Share2, color: "text-sky-600", category: "Social" },
+  { key: "twitterThread", label: "Twitter Thread", icon: MessageSquare, color: "text-cyan-500", category: "Social" },
+  { key: "facebook", label: "Facebook", icon: Share2, color: "text-blue-600", category: "Social" },
+  { key: "instagram", label: "Instagram", icon: Image, color: "text-pink-500", category: "Social" },
+  { key: "newsletter", label: "Newsletter", icon: Mail, color: "text-emerald-500", category: "Email" },
+  { key: "podcast", label: "Podcast Script", icon: Mic, color: "text-purple-500", category: "Audio" },
+  { key: "pressRelease", label: "Press Release", icon: Newspaper, color: "text-rose-500", category: "PR" },
+  { key: "infographic", label: "Infographic", icon: Image, color: "text-teal-500", category: "Visual" },
+  { key: "flipbook", label: "Flipbook", icon: BookOpen, color: "text-orange-400", category: "Visual" },
+  { key: "longVideo", label: "Long Video Script", icon: Video, color: "text-red-500", category: "Video" },
+  { key: "shortVideo", label: "Short Video Script", icon: PlayCircle, color: "text-orange-500", category: "Video" },
+];
+
+// Distribution platform categories
+const distributionCategories = [
+  { key: "social", label: "Social Media", icon: Share2, color: "from-blue-500 to-cyan-500", count: 25 },
+  { key: "blogs", label: "Blogging", icon: BookOpen, color: "from-indigo-500 to-purple-500", count: 35 },
+  { key: "video", label: "Video Platforms", icon: Video, color: "from-red-500 to-orange-500", count: 30 },
+  { key: "podcast", label: "Podcast Directories", icon: Mic, color: "from-purple-500 to-pink-500", count: 35 },
+  { key: "documents", label: "Document Sharing", icon: FileText, color: "from-emerald-500 to-teal-500", count: 25 },
+  { key: "news", label: "News & PR", icon: Newspaper, color: "from-rose-500 to-red-500", count: 50 },
+  { key: "news_aggregators", label: "News Aggregators", icon: Rss, color: "from-amber-500 to-orange-500", count: 25 },
+  { key: "email", label: "Email Marketing", icon: Mail, color: "from-green-500 to-emerald-500", count: 25 },
+  { key: "syndication", label: "Content Syndication", icon: Upload, color: "from-cyan-500 to-blue-500", count: 15 },
+  { key: "directories", label: "Business Directories", icon: Globe, color: "from-slate-500 to-zinc-500", count: 25 },
+  { key: "bookmarking", label: "Bookmarking", icon: BookOpen, color: "from-violet-500 to-purple-500", count: 15 },
 ];
 
 export default function Home() {
@@ -72,6 +127,12 @@ export default function Home() {
   const [contentResult, setContentResult] = useState<ContentResult | null>(null);
   const [selectedContent, setSelectedContent] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"generate" | "distribute">("generate");
+
+  // Distribution state
+  const [isDistributing, setIsDistributing] = useState(false);
+  const [distributionResult, setDistributionResult] = useState<DistributionResult | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["all"]);
 
   // Chat state
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -93,6 +154,7 @@ export default function Home() {
     setIsGenerating(true);
     setContentResult(null);
     setSelectedContent(null);
+    setDistributionResult(null);
 
     try {
       const response = await fetch("/api/content", {
@@ -109,6 +171,48 @@ export default function Home() {
       console.error("Generation error:", error);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleDistribute = async () => {
+    if (!contentResult?.content) return;
+
+    setIsDistributing(true);
+    setDistributionResult(null);
+
+    try {
+      const response = await fetch("/api/distribute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: contentResult.content,
+          platforms: selectedCategories,
+          topic: contentResult.topic,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setDistributionResult(data);
+      }
+    } catch (error) {
+      console.error("Distribution error:", error);
+    } finally {
+      setIsDistributing(false);
+    }
+  };
+
+  const toggleCategory = (key: string) => {
+    if (key === "all") {
+      setSelectedCategories(["all"]);
+    } else {
+      const newCategories = selectedCategories.filter(c => c !== "all");
+      if (newCategories.includes(key)) {
+        const filtered = newCategories.filter(c => c !== key);
+        setSelectedCategories(filtered.length ? filtered : ["all"]);
+      } else {
+        setSelectedCategories([...newCategories, key]);
+      }
     }
   };
 
@@ -147,7 +251,7 @@ export default function Home() {
     const content = contentResult.content[key as keyof typeof contentResult.content];
     if (Array.isArray(content)) {
       if (key === "twitterThread") {
-        return content.join("\n\n---\n\n");
+        return content.map((tweet, i) => `Tweet ${i + 1}:\n${tweet}`).join("\n\n---\n\n");
       }
       if (key === "seoKeywords") {
         return content.join(", ");
@@ -157,12 +261,14 @@ export default function Home() {
     if (typeof content === "object" && content !== null) {
       if (key === "headlines") {
         const h = content as { primary: string; alternatives: string[] };
-        return `Primary: ${h.primary}\n\nAlternatives:\n${h.alternatives?.map((a, i) => `${i + 1}. ${a}`).join("\n") || ""}`;
+        return `PRIMARY HEADLINE:\n${h.primary}\n\nALTERNATIVE HEADLINES:\n${h.alternatives?.map((a, i) => `${i + 1}. ${a}`).join("\n") || ""}`;
       }
       return JSON.stringify(content, null, 2);
     }
     return content || "";
   };
+
+  const totalPlatforms = distributionCategories.reduce((sum, cat) => sum + cat.count, 0);
 
   return (
     <div className="min-h-screen">
@@ -200,7 +306,7 @@ export default function Home() {
             <span className="text-gradient">300+ Platforms.</span>
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Transform any topic into a complete content campaign. Generate articles, social posts, videos, podcasts, and more—all optimized for each platform.
+            Transform any topic into a complete content campaign. Generate articles, videos, podcasts, and more—then distribute across 300+ platforms instantly.
           </p>
         </div>
 
@@ -208,7 +314,7 @@ export default function Home() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
             { label: "Content Formats", value: "16", icon: FileText },
-            { label: "Platforms", value: "300+", icon: Globe },
+            { label: "Platforms", value: `${totalPlatforms}+`, icon: Globe },
             { label: "Categories", value: "11", icon: Share2 },
             { label: "AI Powered", value: "GPT-4o", icon: Zap },
           ].map((stat) => (
@@ -220,134 +326,331 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Content Generator */}
-        <div className="glass rounded-3xl p-6 sm:p-8 mb-8">
-          <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-amber-500" />
-            Content Generator
-          </h3>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Topic or Keyword</label>
-              <input
-                type="text"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder="e.g., 5 AI Tools Every Small Business Should Use in 2026"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none"
-                onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
-              />
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Brand Voice</label>
-                <select
-                  value={brandVoice}
-                  onChange={(e) => setBrandVoice(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none bg-white"
-                >
-                  <option>Professional yet approachable</option>
-                  <option>Bold and authoritative</option>
-                  <option>Casual and friendly</option>
-                  <option>Educational and informative</option>
-                  <option>Inspirational and motivating</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Target Audience</label>
-                <input
-                  type="text"
-                  value={targetAudience}
-                  onChange={(e) => setTargetAudience(e.target.value)}
-                  placeholder="e.g., Small business owners"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none"
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={handleGenerate}
-              disabled={isGenerating || !topic.trim()}
-              className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-accent-purple text-white font-semibold hover:shadow-lg hover:shadow-brand-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Generating 16 Formats...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5" />
-                  Generate Content Campaign
-                </>
-              )}
-            </button>
-          </div>
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab("generate")}
+            className={`flex-1 sm:flex-none px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+              activeTab === "generate"
+                ? "bg-gradient-to-r from-brand-500 to-accent-purple text-white shadow-lg"
+                : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+            }`}
+          >
+            <Sparkles className="w-5 h-5" />
+            Generate Content
+          </button>
+          <button
+            onClick={() => setActiveTab("distribute")}
+            className={`flex-1 sm:flex-none px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+              activeTab === "distribute"
+                ? "bg-gradient-to-r from-brand-500 to-accent-purple text-white shadow-lg"
+                : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+            }`}
+          >
+            <Globe className="w-5 h-5" />
+            Distribute to 300+ Sites
+          </button>
         </div>
 
-        {/* Results */}
-        {contentResult && (
-          <div className="glass rounded-3xl p-6 sm:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <Check className="w-5 h-5 text-emerald-500" />
-                Generated Content
+        {/* Generate Tab */}
+        {activeTab === "generate" && (
+          <>
+            {/* Content Generator */}
+            <div className="glass rounded-3xl p-6 sm:p-8 mb-8">
+              <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-amber-500" />
+                Content Generator
               </h3>
-              <span className="text-sm text-slate-500">
-                {contentTypes.filter(ct => getContentDisplay(ct.key)).length} formats ready
-              </span>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Topic or Keyword</label>
+                  <input
+                    type="text"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    placeholder="e.g., 5 AI Tools Every Small Business Should Use in 2026"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none"
+                    onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
+                  />
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Brand Voice</label>
+                    <select
+                      value={brandVoice}
+                      onChange={(e) => setBrandVoice(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none bg-white"
+                    >
+                      <option>Professional yet approachable</option>
+                      <option>Bold and authoritative</option>
+                      <option>Casual and friendly</option>
+                      <option>Educational and informative</option>
+                      <option>Inspirational and motivating</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Target Audience</label>
+                    <input
+                      type="text"
+                      value={targetAudience}
+                      onChange={(e) => setTargetAudience(e.target.value)}
+                      placeholder="e.g., Small business owners"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !topic.trim()}
+                  className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-accent-purple text-white font-semibold hover:shadow-lg hover:shadow-brand-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Generating 16 Formats...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5" />
+                      Generate Content Campaign
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
-            {/* Content Type Tabs */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {contentTypes.map((ct) => {
-                const hasContent = !!getContentDisplay(ct.key);
-                if (!hasContent) return null;
-
-                return (
+            {/* Results */}
+            {contentResult && (
+              <div className="glass rounded-3xl p-6 sm:p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <Check className="w-5 h-5 text-emerald-500" />
+                    Generated Content — 16 Formats
+                  </h3>
                   <button
-                    key={ct.key}
-                    onClick={() => setSelectedContent(selectedContent === ct.key ? null : ct.key)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                      selectedContent === ct.key
-                        ? "bg-brand-500 text-white shadow-lg shadow-brand-500/25"
-                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                    }`}
+                    onClick={() => setActiveTab("distribute")}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium hover:shadow-lg transition-all text-sm"
                   >
-                    <ct.icon className={`w-4 h-4 ${selectedContent === ct.key ? "text-white" : ct.color}`} />
-                    {ct.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Content Display */}
-            {selectedContent && (
-              <div className="relative">
-                <div className="absolute top-3 right-3">
-                  <button
-                    onClick={() => handleCopy(selectedContent, getContentDisplay(selectedContent))}
-                    className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
-                  >
-                    {copiedKey === selectedContent ? (
-                      <Check className="w-4 h-4 text-emerald-500" />
-                    ) : (
-                      <Copy className="w-4 h-4 text-slate-500" />
-                    )}
+                    <Globe className="w-4 h-4" />
+                    Distribute Now
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
-                <pre className="bg-slate-50 rounded-2xl p-6 pr-14 overflow-auto max-h-96 text-sm text-slate-700 whitespace-pre-wrap font-sans">
-                  {getContentDisplay(selectedContent)}
-                </pre>
+
+                {/* Content Type Tabs - Grouped by Category */}
+                <div className="space-y-4 mb-6">
+                  {["SEO", "Written", "Social", "Email", "Audio", "PR", "Visual", "Video"].map(category => {
+                    const categoryTypes = contentTypes.filter(ct => ct.category === category && getContentDisplay(ct.key));
+                    if (categoryTypes.length === 0) return null;
+
+                    return (
+                      <div key={category}>
+                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{category}</div>
+                        <div className="flex flex-wrap gap-2">
+                          {categoryTypes.map((ct) => (
+                            <button
+                              key={ct.key}
+                              onClick={() => setSelectedContent(selectedContent === ct.key ? null : ct.key)}
+                              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                                selectedContent === ct.key
+                                  ? "bg-brand-500 text-white shadow-lg shadow-brand-500/25"
+                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                              }`}
+                            >
+                              <ct.icon className={`w-4 h-4 ${selectedContent === ct.key ? "text-white" : ct.color}`} />
+                              {ct.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Content Display */}
+                {selectedContent && (
+                  <div className="relative">
+                    <div className="absolute top-3 right-3 flex gap-2">
+                      <button
+                        onClick={() => handleCopy(selectedContent, getContentDisplay(selectedContent))}
+                        className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
+                        title="Copy to clipboard"
+                      >
+                        {copiedKey === selectedContent ? (
+                          <Check className="w-4 h-4 text-emerald-500" />
+                        ) : (
+                          <Copy className="w-4 h-4 text-slate-500" />
+                        )}
+                      </button>
+                    </div>
+                    <pre className="bg-slate-50 rounded-2xl p-6 pr-14 overflow-auto max-h-[500px] text-sm text-slate-700 whitespace-pre-wrap font-sans leading-relaxed">
+                      {getContentDisplay(selectedContent)}
+                    </pre>
+                  </div>
+                )}
+
+                {!selectedContent && (
+                  <p className="text-center text-slate-500 py-8">
+                    Select a content type above to view and copy
+                  </p>
+                )}
               </div>
             )}
+          </>
+        )}
 
-            {!selectedContent && (
-              <p className="text-center text-slate-500 py-8">
-                Select a content type above to view and copy
+        {/* Distribute Tab */}
+        {activeTab === "distribute" && (
+          <div className="space-y-8">
+            {/* Distribution Panel */}
+            <div className="glass rounded-3xl p-6 sm:p-8">
+              <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+                <Globe className="w-5 h-5 text-brand-500" />
+                Multi-Channel Distribution
+              </h3>
+              <p className="text-slate-600 mb-6">
+                Distribute your content across {totalPlatforms}+ platforms in 11 categories. Select categories below or distribute to all.
               </p>
+
+              {!contentResult ? (
+                <div className="text-center py-12 bg-slate-50 rounded-2xl">
+                  <Sparkles className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+                  <h4 className="text-lg font-semibold text-slate-700 mb-2">No Content Generated Yet</h4>
+                  <p className="text-slate-500 mb-4">Generate content first, then distribute it across 300+ platforms.</p>
+                  <button
+                    onClick={() => setActiveTab("generate")}
+                    className="px-6 py-2 rounded-xl bg-brand-500 text-white font-medium hover:bg-brand-600 transition-colors"
+                  >
+                    Go to Content Generator
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Category Selection */}
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm font-medium text-slate-700">Select Distribution Channels</span>
+                      <button
+                        onClick={() => setSelectedCategories(["all"])}
+                        className={`text-sm font-medium px-3 py-1 rounded-lg transition-colors ${
+                          selectedCategories.includes("all")
+                            ? "bg-brand-500 text-white"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        Select All ({totalPlatforms}+ platforms)
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {distributionCategories.map((cat) => {
+                        const isSelected = selectedCategories.includes("all") || selectedCategories.includes(cat.key);
+                        return (
+                          <button
+                            key={cat.key}
+                            onClick={() => toggleCategory(cat.key)}
+                            className={`relative p-4 rounded-2xl border-2 transition-all text-left ${
+                              isSelected
+                                ? "border-brand-500 bg-brand-50"
+                                : "border-slate-200 bg-white hover:border-slate-300"
+                            }`}
+                          >
+                            {isSelected && (
+                              <CheckCircle2 className="absolute top-2 right-2 w-5 h-5 text-brand-500" />
+                            )}
+                            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cat.color} flex items-center justify-center mb-2`}>
+                              <cat.icon className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="font-semibold text-slate-900 text-sm">{cat.label}</div>
+                            <div className="text-xs text-slate-500">{cat.count} platforms</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Distribute Button */}
+                  <button
+                    onClick={handleDistribute}
+                    disabled={isDistributing}
+                    className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold hover:shadow-lg hover:shadow-emerald-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isDistributing ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Creating Distribution Plan...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-5 h-5" />
+                        Create Distribution Plan
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Distribution Results */}
+            {distributionResult && (
+              <div className="glass rounded-3xl p-6 sm:p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                    Distribution Plan Ready
+                  </h3>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-brand-600">{distributionResult.totalPlatformsQueued}</div>
+                    <div className="text-xs text-slate-500">platforms queued</div>
+                  </div>
+                </div>
+
+                {/* Category Breakdown */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                  {distributionCategories.map((cat) => {
+                    const count = distributionResult.categoryCounts[cat.key as keyof typeof distributionResult.categoryCounts] || 0;
+                    if (count === 0) return null;
+
+                    return (
+                      <div key={cat.key} className="bg-slate-50 rounded-xl p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <cat.icon className="w-4 h-4 text-slate-500" />
+                          <span className="text-sm font-medium text-slate-700">{cat.label}</span>
+                        </div>
+                        <div className="text-2xl font-bold text-slate-900">{count}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Platform List */}
+                <div className="bg-slate-50 rounded-2xl p-4 max-h-96 overflow-auto">
+                  <div className="text-sm font-medium text-slate-500 mb-3">Platforms ({distributionResult.platforms?.length || 0})</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {distributionResult.platforms?.slice(0, 50).map((p, idx) => (
+                      <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded-lg">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                        <span className="text-sm text-slate-700 truncate">{p.platform}</span>
+                        <span className="text-xs text-slate-400 ml-auto">{p.contentType}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {(distributionResult.platforms?.length || 0) > 50 && (
+                    <p className="text-center text-sm text-slate-500 mt-4">
+                      + {distributionResult.platforms!.length - 50} more platforms...
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <p className="text-sm text-amber-800">
+                    <strong>Note:</strong> This is a distribution plan. To publish content automatically, configure platform credentials in your n8n instance for each platform you want to automate.
+                  </p>
+                </div>
+              </div>
             )}
           </div>
         )}
