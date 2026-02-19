@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import {
   Sparkles,
   Send,
@@ -29,7 +30,10 @@ import {
   Upload,
   CheckCircle2,
   ArrowRight,
+  LayoutDashboard,
+  User,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -155,6 +159,20 @@ const distributionCategories = [
 ];
 
 export default function Home() {
+  const [authUser, setAuthUser] = useState<{ email: string } | null>(null);
+  const [userProfile, setUserProfile] = useState<{ plan: string; generations_used: number; generations_limit: number } | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setAuthUser({ email: user.email ?? "" });
+        supabase.from("profiles").select("plan,generations_used,generations_limit").eq("id", user.id).single()
+          .then(({ data }) => { if (data) setUserProfile(data); });
+      }
+    });
+  }, []);
+
   const [topic, setTopic] = useState("");
   const [brandVoice, setBrandVoice] = useState("Professional yet approachable");
   const [targetAudience, setTargetAudience] = useState("Business professionals and entrepreneurs");
@@ -389,13 +407,53 @@ export default function Home() {
               </div>
             </div>
 
-            <button
-              onClick={() => setIsChatOpen(!isChatOpen)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-500 to-accent-purple text-white font-medium hover:shadow-lg hover:shadow-brand-500/25 transition-all"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span className="hidden sm:inline">AI Assistant</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {authUser ? (
+                <>
+                  {userProfile && userProfile.generations_limit < 99999 && (
+                    <span className="hidden sm:inline text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
+                      {userProfile.generations_used}/{userProfile.generations_limit} generations
+                    </span>
+                  )}
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors text-sm font-medium"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    <span className="hidden sm:inline">Dashboard</span>
+                  </Link>
+                  <Link
+                    href="/account"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors text-sm font-medium"
+                  >
+                    <User className="w-4 h-4" />
+                    <span className="hidden sm:inline">Account</span>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="px-3 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors text-sm font-medium"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    className="px-3 py-2 rounded-xl bg-gradient-to-r from-brand-500 to-accent-purple text-white text-sm font-medium hover:shadow-lg hover:shadow-brand-500/25 transition-all"
+                  >
+                    Upgrade
+                  </Link>
+                </>
+              )}
+              <button
+                onClick={() => setIsChatOpen(!isChatOpen)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-500 to-accent-purple text-white font-medium hover:shadow-lg hover:shadow-brand-500/25 transition-all"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span className="hidden sm:inline">AI Assistant</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>

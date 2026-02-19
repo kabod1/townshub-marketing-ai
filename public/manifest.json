@@ -1,0 +1,38 @@
+{
+  "name": "TownsHub Marketing AI",
+  "short_name": "TownsHub",
+  "description": "AI-powered content amplification platform for 300+ platforms",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Generate Content",
+      "url": "/",
+      "description": "Create content across 16 formats"
+    },
+    {
+      "name": "Dashboard",
+      "url": "/dashboard",
+      "description": "View your analytics and usage"
+    }
+  ]
+}
