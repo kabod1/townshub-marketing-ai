@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Zap, Check, Star, Rocket, Building2, ArrowRight, Loader2 } from 'lucide-react'
+import { Check, Star, Rocket, Building2, ArrowRight, Loader2 } from 'lucide-react'
 
 const PLANS = [
   {
@@ -113,10 +113,7 @@ export default function PricingPage() {
       {/* Nav */}
       <nav className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center">
-            <Zap className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-lg font-bold text-white">TownsHub</span>
+          <img src="/logo.png" alt="TownsHub" className="h-8 w-auto" />
         </Link>
         <div className="flex items-center gap-4">
           <Link href="/login" className="text-slate-400 hover:text-white text-sm transition-colors">Sign In</Link>

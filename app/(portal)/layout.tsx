@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Zap, LayoutDashboard, Wand2, User, CreditCard, LogOut, Rocket } from 'lucide-react'
+import { LayoutDashboard, Wand2, User, CreditCard, LogOut, Rocket } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -31,11 +31,8 @@ export default async function PortalLayout({ children }: { children: React.React
       <aside className="hidden md:flex w-64 flex-shrink-0 bg-slate-900 border-r border-white/10 flex-col">
         {/* Logo */}
         <div className="p-6 border-b border-white/10">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-lg font-bold text-white">TownsHub</span>
+          <Link href="/">
+            <img src="/logo.png" alt="TownsHub" className="h-10 w-auto" />
           </Link>
         </div>
 
@@ -100,11 +97,8 @@ export default async function PortalLayout({ children }: { children: React.React
 
       {/* Mobile top bar — fixed, above content */}
       <div className="md:hidden fixed top-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-slate-900/95 backdrop-blur border-b border-white/10 z-30">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center">
-            <Zap className="w-3.5 h-3.5 text-white" />
-          </div>
-          <span className="text-base font-bold text-white">TownsHub</span>
+        <Link href="/">
+          <img src="/logo.png" alt="TownsHub" className="h-8 w-auto" />
         </Link>
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-400 capitalize">{plan}</span>

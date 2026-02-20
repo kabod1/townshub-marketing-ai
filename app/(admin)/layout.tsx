@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Zap, LayoutDashboard, Users, LogOut, Shield } from 'lucide-react'
+import { LayoutDashboard, Users, LogOut, Shield } from 'lucide-react'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -26,13 +26,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {/* Logo */}
         <div className="p-6 border-b border-white/10">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <span className="text-lg font-bold text-white">TownsHub</span>
-              <span className="ml-2 text-xs text-violet-400 font-medium">Admin</span>
-            </div>
+            <img src="/logo.png" alt="TownsHub" className="h-10 w-auto" />
+            <span className="ml-2 text-xs text-violet-400 font-medium">Admin</span>
           </Link>
         </div>
 
