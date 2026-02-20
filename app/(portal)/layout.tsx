@@ -5,7 +5,7 @@ import { Zap, LayoutDashboard, Wand2, User, CreditCard, LogOut, Rocket } from 'l
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/', label: 'Generate Content', icon: Wand2 },
+  { href: '/', label: 'Generate', icon: Wand2 },
   { href: '/account', label: 'Account', icon: User },
 ]
 
@@ -27,8 +27,8 @@ export default async function PortalLayout({ children }: { children: React.React
 
   return (
     <div className="flex min-h-screen bg-slate-950">
-      {/* Sidebar */}
-      <aside className="w-64 flex-shrink-0 bg-slate-900 border-r border-white/10 flex flex-col">
+      {/* Sidebar — hidden on mobile */}
+      <aside className="hidden md:flex w-64 flex-shrink-0 bg-slate-900 border-r border-white/10 flex-col">
         {/* Logo */}
         <div className="p-6 border-b border-white/10">
           <Link href="/" className="flex items-center gap-2">
@@ -99,9 +99,59 @@ export default async function PortalLayout({ children }: { children: React.React
       </aside>
 
       {/* Main */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto pb-20 md:pb-0">
+        {/* Mobile top bar */}
+        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-white/10 sticky top-0 z-10">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center">
+              <Zap className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-base font-bold text-white">TownsHub</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400 capitalize">{plan}</span>
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center text-white text-xs font-bold">
+              {initials}
+            </div>
+          </div>
+        </div>
+
         {children}
       </main>
+
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-white/10 z-20">
+        <div className="flex items-center">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex-1 flex flex-col items-center gap-1 py-3 text-slate-400 hover:text-sky-400 transition-colors"
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-xs">{item.label}</span>
+              </Link>
+            )
+          })}
+          {plan !== 'business' && (
+            <Link
+              href="/pricing"
+              className="flex-1 flex flex-col items-center gap-1 py-3 text-sky-400"
+            >
+              <Rocket className="w-5 h-5" />
+              <span className="text-xs">Upgrade</span>
+            </Link>
+          )}
+          <form action="/api/auth/signout" method="POST" className="flex-1">
+            <button type="submit" className="w-full flex flex-col items-center gap-1 py-3 text-slate-400 hover:text-red-400 transition-colors">
+              <LogOut className="w-5 h-5" />
+              <span className="text-xs">Sign Out</span>
+            </button>
+          </form>
+        </div>
+      </nav>
     </div>
   )
 }
