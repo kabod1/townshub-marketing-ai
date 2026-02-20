@@ -1,13 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Zap, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 
 export default function UpdatePasswordPage() {
   const router = useRouter()
+  const supabase = useRef(createClient()).current
   const [ready, setReady] = useState(false)
+  const [expired, setExpired] = useState(false)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -16,22 +18,36 @@ export default function UpdatePasswordPage() {
   const [success, setSuccess] = useState(false)
 
   useEffect(() => {
-    const supabase = createClient()
-    // Exchange the code in the URL for a session (PKCE flow)
+    // onAuthStateChange fires PASSWORD_RECOVERY when Supabase detects
+    // a recovery token (hash or PKCE code) in the URL
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setReady(true)
+      }
+    })
+
+    // Also handle PKCE code in query string explicitly
     const code = new URLSearchParams(window.location.search).get('code')
     if (code) {
       supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        if (error) setError('Reset link is invalid or has expired. Please request a new one.')
+        if (error) setExpired(true)
         else setReady(true)
       })
-    } else {
-      // Check if we already have a recovery session
-      supabase.auth.getSession().then(({ data }) => {
-        if (data.session) setReady(true)
-        else setError('Reset link is invalid or has expired. Please request a new one.')
-      })
     }
-  }, [])
+
+    // If neither fires in 6s, the link is invalid/expired
+    const timer = setTimeout(() => {
+      setExpired(prev => {
+        if (!ready) return true
+        return prev
+      })
+    }, 6000)
+
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timer)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleUpdate(e: React.FormEvent) {
     e.preventDefault()
@@ -40,9 +56,7 @@ export default function UpdatePasswordPage() {
     setLoading(true)
     setError('')
 
-    const supabase = createClient()
     const { error } = await supabase.auth.updateUser({ password })
-
     if (error) {
       setError(error.message)
       setLoading(false)
@@ -74,18 +88,22 @@ export default function UpdatePasswordPage() {
               <h2 className="text-2xl font-bold text-white mb-2">Password updated!</h2>
               <p className="text-slate-400">Redirecting you to your dashboard...</p>
             </div>
-          ) : error && !ready ? (
+          ) : expired ? (
             <div className="text-center">
-              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-3 mb-6 text-sm">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                {error}
+              <div className="w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-7 h-7 text-red-400" />
               </div>
-              <a href="/forgot-password" className="text-sky-400 hover:text-sky-300 text-sm">
-                Request a new reset link
+              <h3 className="text-lg font-semibold text-white mb-2">Link expired</h3>
+              <p className="text-slate-400 text-sm mb-6">This reset link is invalid or has already been used.</p>
+              <a href="/forgot-password" className="inline-block bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-semibold px-6 py-2.5 rounded-xl hover:from-sky-600 hover:to-cyan-600 transition-all text-sm">
+                Request a new link
               </a>
             </div>
           ) : !ready ? (
-            <div className="text-center text-slate-400 py-8">Verifying reset link...</div>
+            <div className="text-center text-slate-400 py-8">
+              <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              Verifying reset link...
+            </div>
           ) : (
             <>
               {error && (
