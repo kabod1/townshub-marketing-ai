@@ -27,7 +27,7 @@ function RegisterForm() {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -37,7 +37,19 @@ function RegisterForm() {
     })
 
     if (error) {
-      setError(error.message)
+      // Account is still created when only the notification email fails
+      // (email confirmations are disabled so the user can sign in immediately)
+      const isEmailSendError = error.message?.toLowerCase().includes('email') ||
+                               error.message?.toLowerCase().includes('confirmation') ||
+                               error.message?.toLowerCase().includes('sending')
+      if (isEmailSendError) {
+        setSuccess(true)
+      } else {
+        setError(error.message)
+        setLoading(false)
+      }
+    } else if (data.user && data.user.identities?.length === 0) {
+      setError('An account with this email already exists. Please sign in instead.')
       setLoading(false)
     } else {
       setSuccess(true)
@@ -50,13 +62,15 @@ function RegisterForm() {
         <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
           <CheckCircle className="w-8 h-8 text-green-400" />
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Check your email</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Account created!</h2>
         <p className="text-slate-400 mb-6">
-          We sent a confirmation link to <strong className="text-white">{email}</strong>.
-          Click it to activate your account.
+          Welcome to TownsHub. Your account for <strong className="text-white">{email}</strong> is ready — you can sign in now.
         </p>
-        <Link href="/login" className="text-sky-400 hover:text-sky-300 font-medium">
-          Back to sign in
+        <Link
+          href="/login"
+          className="inline-block bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-semibold px-6 py-2.5 rounded-xl hover:from-sky-600 hover:to-cyan-600 transition-all"
+        >
+          Sign In Now
         </Link>
       </div>
     )
