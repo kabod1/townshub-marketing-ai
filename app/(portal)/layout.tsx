@@ -98,24 +98,24 @@ export default async function PortalLayout({ children }: { children: React.React
         </div>
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 overflow-auto pb-20 md:pb-0">
-        {/* Mobile top bar */}
-        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-white/10 sticky top-0 z-10">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="text-base font-bold text-white">TownsHub</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400 capitalize">{plan}</span>
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center text-white text-xs font-bold">
-              {initials}
-            </div>
+      {/* Mobile top bar — fixed, above content */}
+      <div className="md:hidden fixed top-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-slate-900/95 backdrop-blur border-b border-white/10 z-30">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center">
+            <Zap className="w-3.5 h-3.5 text-white" />
+          </div>
+          <span className="text-base font-bold text-white">TownsHub</span>
+        </Link>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-400 capitalize">{plan}</span>
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center text-white text-xs font-bold">
+            {initials}
           </div>
         </div>
+      </div>
 
+      {/* Main */}
+      <main className="flex-1 overflow-auto pt-14 md:pt-0 pb-20 md:pb-0">
         {children}
       </main>
 
