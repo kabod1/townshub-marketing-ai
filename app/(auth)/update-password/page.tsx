@@ -8,6 +8,7 @@ import { Zap, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 export default function UpdatePasswordPage() {
   const router = useRouter()
   const supabase = useRef(createClient()).current
+  const readyRef = useRef(false)
   const [ready, setReady] = useState(false)
   const [expired, setExpired] = useState(false)
   const [password, setPassword] = useState('')
@@ -17,31 +18,29 @@ export default function UpdatePasswordPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
+  function markReady() {
+    readyRef.current = true
+    setReady(true)
+  }
+
   useEffect(() => {
-    // onAuthStateChange fires PASSWORD_RECOVERY when Supabase detects
-    // a recovery token (hash or PKCE code) in the URL
+    // Implicit flow: Supabase puts tokens in the URL hash.
+    // onAuthStateChange fires PASSWORD_RECOVERY automatically when it detects them.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setReady(true)
-      }
+      if (event === 'PASSWORD_RECOVERY') markReady()
     })
 
-    // Also handle PKCE code in query string explicitly
+    // Fallback: PKCE code in query string (same-browser flow)
     const code = new URLSearchParams(window.location.search).get('code')
     if (code) {
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        if (error) setExpired(true)
-        else setReady(true)
-      })
+      supabase.auth.exchangeCodeForSession(code)
+        .then(({ error }) => { if (!error) markReady() })
     }
 
-    // If neither fires in 6s, the link is invalid/expired
+    // If nothing fires in 8 seconds, the link is expired/invalid
     const timer = setTimeout(() => {
-      setExpired(prev => {
-        if (!ready) return true
-        return prev
-      })
-    }, 6000)
+      if (!readyRef.current) setExpired(true)
+    }, 8000)
 
     return () => {
       subscription.unsubscribe()
