@@ -1,10 +1,20 @@
 -- ============================================================
--- TownsHub Marketing AI - Initial Schema
+-- TownsHub Marketing AI - Initial Schema (Safe Reset)
 -- Run this in your Supabase SQL Editor
 -- ============================================================
 
+-- Drop existing tables if they have wrong schema (cascade removes dependent policies/indexes)
+DROP TABLE IF EXISTS public.usage_events CASCADE;
+DROP TABLE IF EXISTS public.content_history CASCADE;
+DROP TABLE IF EXISTS public.subscriptions CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+
+-- ============================================================
+-- Tables
+-- ============================================================
+
 -- Profiles table (extends auth.users)
-CREATE TABLE IF NOT EXISTS public.profiles (
+CREATE TABLE public.profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   full_name TEXT,
   avatar_url TEXT,
@@ -19,7 +29,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 -- Subscriptions table
-CREATE TABLE IF NOT EXISTS public.subscriptions (
+CREATE TABLE public.subscriptions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL UNIQUE,
   provider TEXT NOT NULL CHECK (provider IN ('stripe', 'paypal')),
@@ -31,7 +41,7 @@ CREATE TABLE IF NOT EXISTS public.subscriptions (
 );
 
 -- Content history table
-CREATE TABLE IF NOT EXISTS public.content_history (
+CREATE TABLE public.content_history (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   topic TEXT NOT NULL,
@@ -41,7 +51,7 @@ CREATE TABLE IF NOT EXISTS public.content_history (
 );
 
 -- Usage events table
-CREATE TABLE IF NOT EXISTS public.usage_events (
+CREATE TABLE public.usage_events (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   event_type TEXT NOT NULL CHECK (event_type IN ('generate', 'distribute', 'podcast', 'pr', 'chat')),
@@ -68,8 +78,8 @@ CREATE POLICY "Users can update own profile" ON public.profiles
 CREATE POLICY "Admins can view all profiles" ON public.profiles
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = auth.uid() AND p.role = 'admin'
     )
   );
 
@@ -113,7 +123,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE OR REPLACE TRIGGER on_auth_user_created
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
@@ -126,22 +137,21 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER on_profile_updated
+DROP TRIGGER IF EXISTS on_profile_updated ON public.profiles;
+CREATE TRIGGER on_profile_updated
   BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
 
 -- ============================================================
--- Indexes for performance
+-- Indexes
 -- ============================================================
 
-CREATE INDEX IF NOT EXISTS idx_content_history_user_id ON public.content_history(user_id);
-CREATE INDEX IF NOT EXISTS idx_content_history_created_at ON public.content_history(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_usage_events_user_id ON public.usage_events(user_id);
-CREATE INDEX IF NOT EXISTS idx_usage_events_created_at ON public.usage_events(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_usage_events_event_type ON public.usage_events(event_type);
+CREATE INDEX idx_content_history_user_id ON public.content_history(user_id);
+CREATE INDEX idx_content_history_created_at ON public.content_history(created_at DESC);
+CREATE INDEX idx_usage_events_user_id ON public.usage_events(user_id);
+CREATE INDEX idx_usage_events_created_at ON public.usage_events(created_at DESC);
+CREATE INDEX idx_usage_events_event_type ON public.usage_events(event_type);
 
 -- ============================================================
--- Grant service role bypass RLS (for admin dashboard)
+-- Done! Tables, RLS, triggers and indexes are ready.
 -- ============================================================
--- The SUPABASE_SERVICE_ROLE_KEY already bypasses RLS automatically.
--- No additional grants needed.
