@@ -1,18 +1,37 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Zap, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 
 export default function UpdatePasswordPage() {
   const router = useRouter()
+  const [ready, setReady] = useState(false)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+    // Exchange the code in the URL for a session (PKCE flow)
+    const code = new URLSearchParams(window.location.search).get('code')
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) setError('Reset link is invalid or has expired. Please request a new one.')
+        else setReady(true)
+      })
+    } else {
+      // Check if we already have a recovery session
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session) setReady(true)
+        else setError('Reset link is invalid or has expired. Please request a new one.')
+      })
+    }
+  }, [])
 
   async function handleUpdate(e: React.FormEvent) {
     e.preventDefault()
@@ -55,6 +74,18 @@ export default function UpdatePasswordPage() {
               <h2 className="text-2xl font-bold text-white mb-2">Password updated!</h2>
               <p className="text-slate-400">Redirecting you to your dashboard...</p>
             </div>
+          ) : error && !ready ? (
+            <div className="text-center">
+              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-3 mb-6 text-sm">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {error}
+              </div>
+              <a href="/forgot-password" className="text-sky-400 hover:text-sky-300 text-sm">
+                Request a new reset link
+              </a>
+            </div>
+          ) : !ready ? (
+            <div className="text-center text-slate-400 py-8">Verifying reset link...</div>
           ) : (
             <>
               {error && (
