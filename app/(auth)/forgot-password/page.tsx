@@ -15,12 +15,22 @@ export default function ForgotPasswordPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const supabase = createClient()
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/api/auth/callback?type=recovery`,
-    })
-    if (error) { setError(error.message); setLoading(false) }
-    else setSent(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/api/auth/callback?type=recovery`,
+      })
+      if (error) {
+        const msg = error.message && error.message !== '{}' ? error.message : 'Failed to send reset email. Please try again.'
+        setError(msg)
+        setLoading(false)
+      } else {
+        setSent(true)
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.')
+      setLoading(false)
+    }
   }
 
   return (
