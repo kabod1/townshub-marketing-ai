@@ -24,20 +24,36 @@ export default function UpdatePasswordPage() {
   }
 
   useEffect(() => {
-    // Implicit flow: Supabase puts tokens in the URL hash.
-    // onAuthStateChange fires PASSWORD_RECOVERY automatically when it detects them.
+    const params = new URLSearchParams(window.location.search)
+    const tokenHash = params.get('token_hash')
+    const type = params.get('type')
+    const code = params.get('code')
+
+    if (tokenHash && type === 'recovery') {
+      // New approach: token_hash in query param — works in any browser/WebView
+      supabase.auth.verifyOtp({ type: 'recovery', token_hash: tokenHash })
+        .then(({ error }) => {
+          if (error) setExpired(true)
+          else markReady()
+        })
+      return
+    }
+
+    if (code) {
+      // PKCE fallback (same-browser flow)
+      supabase.auth.exchangeCodeForSession(code)
+        .then(({ error }) => {
+          if (error) setExpired(true)
+          else markReady()
+        })
+      return
+    }
+
+    // Implicit flow fallback: listen for PASSWORD_RECOVERY from hash tokens
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') markReady()
     })
 
-    // Fallback: PKCE code in query string (same-browser flow)
-    const code = new URLSearchParams(window.location.search).get('code')
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code)
-        .then(({ error }) => { if (!error) markReady() })
-    }
-
-    // If nothing fires in 8 seconds, the link is expired/invalid
     const timer = setTimeout(() => {
       if (!readyRef.current) setExpired(true)
     }, 8000)
