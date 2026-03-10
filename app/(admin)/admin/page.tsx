@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
 import { Users, TrendingUp, DollarSign, Zap, Shield, ArrowUpRight, ArrowDownRight, BarChart2, ExternalLink } from 'lucide-react'
+import { getGAMetrics } from '@/lib/google-analytics'
 
 const PLAN_PRICES: Record<string, number> = {
   free: 0,
@@ -73,10 +74,11 @@ export default async function AdminPage() {
   const fourteenDaysAgo = new Date(Date.now() - 14 * 86400000).toISOString()
   const today = new Date().toISOString().slice(0, 10)
 
-  const [usersRes, events30Res, recentUsersRes] = await Promise.all([
+  const [usersRes, events30Res, recentUsersRes, gaMetrics] = await Promise.all([
     adminSupabase.from('profiles').select('id, full_name, plan, generations_used, created_at, role'),
     adminSupabase.from('usage_events').select('event_type, created_at, user_id').gte('created_at', thirtyDaysAgo).order('created_at', { ascending: true }),
     adminSupabase.from('profiles').select('id, full_name, plan, created_at').order('created_at', { ascending: false }).limit(10),
+    getGAMetrics(),
   ])
 
   const allUsers = usersRes.data ?? []
@@ -337,7 +339,7 @@ export default async function AdminPage() {
             </div>
             <div>
               <h2 className="text-sm font-semibold text-white">Web Analytics (Google Analytics 4)</h2>
-              <p className="text-slate-500 text-xs">Page views, sessions, and traffic sources</p>
+              <p className="text-slate-500 text-xs">Last 30 days — page views, sessions, active users</p>
             </div>
           </div>
           <a
@@ -346,36 +348,71 @@ export default async function AdminPage() {
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 text-orange-400 text-xs font-medium rounded-xl transition-colors"
           >
-            Open GA4 Dashboard <ExternalLink className="w-3 h-3" />
+            Open GA4 <ExternalLink className="w-3 h-3" />
           </a>
         </div>
 
-        {process.env.NEXT_PUBLIC_GA_ID ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { label: 'Measurement ID', value: process.env.NEXT_PUBLIC_GA_ID, sub: 'Tracking active ✓' },
-              { label: 'View Full Report', value: 'GA4 →', sub: 'Sessions, bounce rate, sources' },
-              { label: 'Real-time', value: 'Live', sub: 'See active users now' },
-              { label: 'Conversions', value: 'Goals', sub: 'Set up in GA4 dashboard' },
-            ].map((s) => (
-              <div key={s.label} className="bg-white/5 rounded-xl p-3">
-                <p className="text-slate-500 text-xs mb-1">{s.label}</p>
-                <p className="text-white font-semibold text-sm">{s.value}</p>
-                <p className="text-slate-600 text-xs mt-0.5">{s.sub}</p>
+        {gaMetrics ? (
+          <>
+            {/* KPI row */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {[
+                { label: 'Page Views', value: gaMetrics.pageViews.toLocaleString(), sub: '30-day total' },
+                { label: 'Sessions', value: gaMetrics.sessions.toLocaleString(), sub: '30-day total' },
+                { label: 'Active Users', value: gaMetrics.activeUsers.toLocaleString(), sub: '30-day unique' },
+                { label: 'Bounce Rate', value: `${gaMetrics.bounceRate}%`, sub: 'avg last 30 days' },
+              ].map((s) => (
+                <div key={s.label} className="bg-white/5 rounded-xl p-4">
+                  <p className="text-slate-500 text-xs mb-1">{s.label}</p>
+                  <p className="text-white font-bold text-xl">{s.value}</p>
+                  <p className="text-slate-600 text-xs mt-0.5">{s.sub}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* 30-day page views chart */}
+            {gaMetrics.daily.length > 0 && (
+              <div className="mb-6">
+                <p className="text-slate-500 text-xs mb-2">Daily Page Views — Last 30 Days</p>
+                <BarChart data={gaMetrics.daily.map((d) => d.pageViews)} color="bg-orange-500" />
               </div>
-            ))}
-          </div>
+            )}
+
+            {/* Top pages */}
+            {gaMetrics.topPages.length > 0 && (
+              <div>
+                <p className="text-slate-500 text-xs mb-2">Top Pages</p>
+                <div className="space-y-2">
+                  {gaMetrics.topPages.map((p) => {
+                    const maxViews = gaMetrics.topPages[0]?.views || 1
+                    return (
+                      <div key={p.path} className="flex items-center gap-3">
+                        <span className="text-slate-400 text-xs font-mono w-40 truncate">{p.path}</span>
+                        <div className="flex-1 bg-white/5 rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className="h-full bg-orange-500 rounded-full"
+                            style={{ width: `${Math.round((p.views / maxViews) * 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-white text-xs font-medium w-10 text-right">{p.views.toLocaleString()}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4">
-            <p className="text-orange-300 text-sm font-medium mb-1">GA4 not configured</p>
+            <p className="text-orange-300 text-sm font-medium mb-1">GA4 Data API not connected</p>
             <p className="text-slate-400 text-xs mb-3">
-              Add your Google Analytics 4 Measurement ID to start tracking page views and traffic.
+              Add a Google Cloud service account to display live traffic data here.
             </p>
             <ol className="text-slate-400 text-xs space-y-1.5 list-decimal list-inside">
-              <li>Go to <span className="text-orange-400">analytics.google.com</span> → create a GA4 property for TownsHub</li>
-              <li>Copy your <strong className="text-white">Measurement ID</strong> (format: <code className="bg-white/10 px-1 rounded">G-XXXXXXXXXX</code>)</li>
-              <li>Add to Vercel: <strong className="text-white">NEXT_PUBLIC_GA_ID = G-XXXXXXXXXX</strong></li>
-              <li>Add to your <code className="bg-white/10 px-1 rounded">.env.local</code> file for local dev</li>
+              <li>Enable <strong className="text-white">Google Analytics Data API</strong> in Google Cloud Console</li>
+              <li>Create a service account → download JSON key</li>
+              <li>Add service account email as <strong className="text-white">Viewer</strong> in GA4 property access</li>
+              <li>Add to Vercel: <code className="bg-white/10 px-1 rounded">GA_PROPERTY_ID</code> and <code className="bg-white/10 px-1 rounded">GA_SERVICE_ACCOUNT_JSON</code></li>
             </ol>
           </div>
         )}
