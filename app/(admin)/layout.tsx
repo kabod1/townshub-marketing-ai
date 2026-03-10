@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { LayoutDashboard, Users, LogOut, Shield, DollarSign, BarChart3, Activity } from 'lucide-react'
+import { LayoutDashboard, Users, LogOut, Shield, DollarSign, BarChart3, Activity, ExternalLink } from 'lucide-react'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -52,12 +52,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             )
           })}
           <div className="pt-3">
-            <p className="text-slate-600 text-[10px] font-semibold uppercase tracking-widest px-3 pb-1">App</p>
+            <p className="text-slate-600 text-[10px] font-semibold uppercase tracking-widest px-3 pb-1">External</p>
+            <a
+              href="https://analytics.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-medium group"
+            >
+              <BarChart3 className="w-4 h-4 group-hover:text-orange-400 transition-colors" />
+              <span className="flex-1">Google Analytics</span>
+              <ExternalLink className="w-3 h-3 opacity-50" />
+            </a>
             <Link
               href="/dashboard"
               className="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-medium group"
             >
-              <BarChart3 className="w-4 h-4 group-hover:text-violet-400 transition-colors" />
+              <Users className="w-4 h-4 group-hover:text-violet-400 transition-colors" />
               User Dashboard
             </Link>
           </div>

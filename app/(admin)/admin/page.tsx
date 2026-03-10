@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
-import { Users, TrendingUp, DollarSign, Zap, Shield, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { Users, TrendingUp, DollarSign, Zap, Shield, ArrowUpRight, ArrowDownRight, BarChart2, ExternalLink } from 'lucide-react'
 
 const PLAN_PRICES: Record<string, number> = {
   free: 0,
@@ -326,6 +326,59 @@ export default async function AdminPage() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Google Analytics Panel */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-yellow-500 flex items-center justify-center">
+              <BarChart2 className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-white">Web Analytics (Google Analytics 4)</h2>
+              <p className="text-slate-500 text-xs">Page views, sessions, and traffic sources</p>
+            </div>
+          </div>
+          <a
+            href="https://analytics.google.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 text-orange-400 text-xs font-medium rounded-xl transition-colors"
+          >
+            Open GA4 Dashboard <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+
+        {process.env.NEXT_PUBLIC_GA_ID ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: 'Measurement ID', value: process.env.NEXT_PUBLIC_GA_ID, sub: 'Tracking active ✓' },
+              { label: 'View Full Report', value: 'GA4 →', sub: 'Sessions, bounce rate, sources' },
+              { label: 'Real-time', value: 'Live', sub: 'See active users now' },
+              { label: 'Conversions', value: 'Goals', sub: 'Set up in GA4 dashboard' },
+            ].map((s) => (
+              <div key={s.label} className="bg-white/5 rounded-xl p-3">
+                <p className="text-slate-500 text-xs mb-1">{s.label}</p>
+                <p className="text-white font-semibold text-sm">{s.value}</p>
+                <p className="text-slate-600 text-xs mt-0.5">{s.sub}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4">
+            <p className="text-orange-300 text-sm font-medium mb-1">GA4 not configured</p>
+            <p className="text-slate-400 text-xs mb-3">
+              Add your Google Analytics 4 Measurement ID to start tracking page views and traffic.
+            </p>
+            <ol className="text-slate-400 text-xs space-y-1.5 list-decimal list-inside">
+              <li>Go to <span className="text-orange-400">analytics.google.com</span> → create a GA4 property for TownsHub</li>
+              <li>Copy your <strong className="text-white">Measurement ID</strong> (format: <code className="bg-white/10 px-1 rounded">G-XXXXXXXXXX</code>)</li>
+              <li>Add to Vercel: <strong className="text-white">NEXT_PUBLIC_GA_ID = G-XXXXXXXXXX</strong></li>
+              <li>Add to your <code className="bg-white/10 px-1 rounded">.env.local</code> file for local dev</li>
+            </ol>
+          </div>
+        )}
       </div>
 
       {/* Recent Signups */}
