@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { LayoutDashboard, Users, LogOut, Shield } from 'lucide-react'
+import { LayoutDashboard, Users, LogOut, Shield, DollarSign, BarChart3, Activity } from 'lucide-react'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -32,9 +32,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
+          <p className="text-slate-600 text-[10px] font-semibold uppercase tracking-widest px-3 pb-1 pt-2">Analytics</p>
           {[
-            { href: '/admin', label: 'Admin Dashboard', icon: LayoutDashboard },
-            { href: '/dashboard', label: 'User Dashboard', icon: Users },
+            { href: '/admin', label: 'Overview', icon: LayoutDashboard },
+            { href: '/admin/users', label: 'Users', icon: Users },
+            { href: '/admin/revenue', label: 'Revenue', icon: DollarSign },
+            { href: '/admin/usage', label: 'Usage', icon: Activity },
           ].map((item) => {
             const Icon = item.icon
             return (
@@ -48,6 +51,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               </Link>
             )
           })}
+          <div className="pt-3">
+            <p className="text-slate-600 text-[10px] font-semibold uppercase tracking-widest px-3 pb-1">App</p>
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-medium group"
+            >
+              <BarChart3 className="w-4 h-4 group-hover:text-violet-400 transition-colors" />
+              User Dashboard
+            </Link>
+          </div>
         </nav>
 
         <div className="p-4 border-t border-white/10">
