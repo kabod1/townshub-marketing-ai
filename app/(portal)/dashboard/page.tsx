@@ -80,7 +80,7 @@ export default async function DashboardPage() {
             <Rocket className="w-5 h-5 text-sky-400 flex-shrink-0" />
             <div>
               <p className="text-white text-sm font-semibold">Running low on generations</p>
-              <p className="text-slate-400 text-xs">Upgrade to Starter for 50 generations/month starting at $29.</p>
+              <p className="text-slate-400 text-xs">Upgrade to Starter for 50 generations/month starting at $44.</p>
             </div>
           </div>
           <Link href="/pricing" className="bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors flex-shrink-0">

@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { plan } = await request.json() as { plan: PlanKey }
+  const { plan, interval = 'month' } = await request.json() as { plan: PlanKey; interval?: 'month' | 'year' }
 
   if (!PLANS[plan]) {
     return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
@@ -24,16 +24,21 @@ export async function POST(request: Request) {
 
   const origin = request.headers.get('origin') ?? process.env.NEXT_PUBLIC_APP_URL ?? ''
 
+  const planData = PLANS[plan]
+  const priceId = interval === 'year' && planData.yearlyPriceId
+    ? planData.yearlyPriceId
+    : planData.priceId
+
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
-    payment_method_types: ['card'],
+    payment_method_types: ['card', 'link'],
     customer: profile?.stripe_customer_id ?? undefined,
     customer_email: profile?.stripe_customer_id ? undefined : user.email,
-    line_items: [{ price: PLANS[plan].priceId, quantity: 1 }],
+    line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${origin}/dashboard?upgraded=1`,
     cancel_url: `${origin}/pricing`,
-    metadata: { user_id: user.id, plan },
-    subscription_data: { metadata: { user_id: user.id, plan } },
+    metadata: { user_id: user.id, plan, interval },
+    subscription_data: { metadata: { user_id: user.id, plan, interval } },
   })
 
   return NextResponse.json({ url: session.url })

@@ -21,25 +21,31 @@ export const stripe = new Proxy({} as Stripe, {
 export const PLANS = {
   starter: {
     name: 'Starter',
-    price: 2900,
+    price: 4400,           // $44/mo
+    yearlyPrice: 33600,    // $336/yr ($28/mo billed annually)
     priceId: process.env.STRIPE_STARTER_PRICE_ID ?? '',
+    yearlyPriceId: process.env.STRIPE_STARTER_PRICE_ID_YEARLY ?? '',
     generations: 50,
     limit: 50,
     formats: 8,
   },
   pro: {
     name: 'Pro',
-    price: 7900,
+    price: 11900,          // $119/mo
+    yearlyPrice: 90000,    // $900/yr ($75/mo billed annually)
     priceId: process.env.STRIPE_PRO_PRICE_ID ?? '',
+    yearlyPriceId: process.env.STRIPE_PRO_PRICE_ID_YEARLY ?? '',
     generations: 200,
     limit: 200,
     formats: 16,
   },
   business: {
     name: 'Business',
-    price: 19900,
+    price: 29900,          // $299/mo
+    yearlyPrice: 225600,   // $2,256/yr ($188/mo billed annually)
     priceId: process.env.STRIPE_BUSINESS_PRICE_ID ?? '',
-    generations: -1, // unlimited
+    yearlyPriceId: process.env.STRIPE_BUSINESS_PRICE_ID_YEARLY ?? '',
+    generations: -1,       // unlimited
     limit: 99999,
     formats: 16,
   },

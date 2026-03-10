@@ -5,9 +5,9 @@ import { Users, TrendingUp, DollarSign, Zap, Shield } from 'lucide-react'
 
 const PLAN_PRICES: Record<string, number> = {
   free: 0,
-  starter: 29,
-  pro: 79,
-  business: 199,
+  starter: 44,
+  pro: 119,
+  business: 299,
 }
 
 const PLAN_COLORS: Record<string, string> = {
@@ -120,9 +120,9 @@ export default async function AdminPage() {
           <h2 className="text-sm font-semibold text-white mb-5">Revenue Breakdown</h2>
           <div className="space-y-3">
             {[
-              { plan: 'starter', label: 'Starter ($29)', count: planCounts.starter },
-              { plan: 'pro', label: 'Pro ($79)', count: planCounts.pro },
-              { plan: 'business', label: 'Business ($199)', count: planCounts.business },
+              { plan: 'starter', label: 'Starter ($44)', count: planCounts.starter },
+              { plan: 'pro', label: 'Pro ($119)', count: planCounts.pro },
+              { plan: 'business', label: 'Business ($299)', count: planCounts.business },
             ].map(({ plan, label, count }) => (
               <div key={plan} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

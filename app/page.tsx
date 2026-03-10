@@ -32,6 +32,7 @@ import {
   ArrowRight,
   LayoutDashboard,
   User,
+  Lock,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -161,6 +162,8 @@ const distributionCategories = [
 export default function Home() {
   const [authUser, setAuthUser] = useState<{ email: string } | null>(null);
   const [userProfile, setUserProfile] = useState<{ plan: string; generations_used: number; generations_limit: number } | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [showGate, setShowGate] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -168,10 +171,23 @@ export default function Home() {
       if (user) {
         setAuthUser({ email: user.email ?? "" });
         supabase.from("profiles").select("plan,generations_used,generations_limit").eq("id", user.id).single()
-          .then(({ data }) => { if (data) setUserProfile(data); });
+          .then(({ data }) => {
+            if (data) setUserProfile(data);
+            setProfileLoading(false);
+          });
+      } else {
+        setProfileLoading(false);
       }
     });
   }, []);
+
+  const isSubscribed = !profileLoading && !!userProfile && userProfile.plan !== "free";
+
+  const checkSubscription = () => {
+    if (profileLoading) return false;
+    if (!authUser || !isSubscribed) { setShowGate(true); return false; }
+    return true;
+  };
 
   const [topic, setTopic] = useState("");
   const [brandVoice, setBrandVoice] = useState("Professional yet approachable");
@@ -213,6 +229,7 @@ export default function Home() {
   }, [messages]);
 
   const handleGenerate = async () => {
+    if (!checkSubscription()) return;
     if (!topic.trim()) return;
 
     setIsGenerating(true);
@@ -239,6 +256,7 @@ export default function Home() {
   };
 
   const handleDistribute = async () => {
+    if (!checkSubscription()) return;
     if (!contentResult?.content) return;
 
     setIsDistributing(true);
@@ -287,6 +305,7 @@ export default function Home() {
   };
 
   const handlePodcast = async () => {
+    if (!checkSubscription()) return;
     if (!contentResult?.content) return;
 
     setIsPodcastLoading(true);
@@ -316,6 +335,7 @@ export default function Home() {
   };
 
   const handlePR = async () => {
+    if (!checkSubscription()) return;
     if (!contentResult?.content) return;
 
     setIsPRLoading(true);
@@ -1081,6 +1101,72 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* Subscription Gate Modal */}
+      {showGate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative">
+            <button
+              onClick={() => setShowGate(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-accent-purple flex items-center justify-center mx-auto mb-4">
+                <Lock className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Subscribe to Access</h3>
+              <p className="text-slate-500 text-sm mb-6 max-w-xs mx-auto">
+                Generate content across 16 formats and distribute to 300+ platforms.
+                Subscribe to unlock all tools.
+              </p>
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                {[
+                  { name: "Starter", price: "$44", color: "from-slate-500 to-slate-600", popular: false },
+                  { name: "Pro", price: "$119", color: "from-sky-500 to-cyan-500", popular: true },
+                  { name: "Business", price: "$299", color: "from-violet-500 to-purple-600", popular: false },
+                ].map((plan) => (
+                  <div
+                    key={plan.name}
+                    className={`bg-gradient-to-br ${plan.color} rounded-2xl p-3 text-center text-white ${plan.popular ? "ring-2 ring-sky-400 scale-105" : ""}`}
+                  >
+                    <div className="text-xs font-medium opacity-80 mb-1">{plan.name}</div>
+                    <div className="text-xl font-bold">{plan.price}</div>
+                    <div className="text-xs opacity-70">/mo</div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                {!authUser && (
+                  <Link
+                    href="/register"
+                    onClick={() => setShowGate(false)}
+                    className="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
+                  >
+                    Create Account
+                  </Link>
+                )}
+                <Link
+                  href="/pricing"
+                  onClick={() => setShowGate(false)}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-500 to-accent-purple text-white text-sm font-semibold hover:shadow-lg hover:shadow-brand-500/25 transition-all"
+                >
+                  View Plans & Subscribe →
+                </Link>
+              </div>
+              {authUser && (
+                <p className="text-xs text-slate-400 mt-4">
+                  Signed in as {authUser.email} ·{" "}
+                  <button onClick={() => setShowGate(false)} className="underline hover:text-slate-600">
+                    dismiss
+                  </button>
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Chat Sidebar */}
       <div
