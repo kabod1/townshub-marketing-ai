@@ -17,11 +17,11 @@ export default async function PortalLayout({ children }: { children: React.React
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, plan, avatar_url, role')
+    .select('plan, avatar_url, role')
     .eq('id', user.id)
     .single()
 
-  const displayName = profile?.full_name || user.email?.split('@')[0] || 'User'
+  const displayName = user.email?.split('@')[0] || 'User'
   const plan = profile?.plan || 'free'
   const isAdmin = profile?.role === 'admin'
   const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
