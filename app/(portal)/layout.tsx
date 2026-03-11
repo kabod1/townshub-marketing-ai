@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { LayoutDashboard, Wand2, User, CreditCard, LogOut, Rocket } from 'lucide-react'
+import { LayoutDashboard, Wand2, User, CreditCard, LogOut, Rocket, ShieldCheck } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -17,12 +17,13 @@ export default async function PortalLayout({ children }: { children: React.React
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, plan, avatar_url')
+    .select('full_name, plan, avatar_url, role')
     .eq('id', user.id)
     .single()
 
   const displayName = profile?.full_name || user.email?.split('@')[0] || 'User'
   const plan = profile?.plan || 'free'
+  const isAdmin = profile?.role === 'admin'
   const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
 
   return (
@@ -51,6 +52,16 @@ export default async function PortalLayout({ children }: { children: React.React
               </Link>
             )
           })}
+
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm font-medium group"
+            >
+              <ShieldCheck className="w-4 h-4 group-hover:text-sky-400 transition-colors" />
+              Admin
+            </Link>
+          )}
 
           {plan !== 'business' && (
             <div className="pt-4">
