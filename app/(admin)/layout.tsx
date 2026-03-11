@@ -11,13 +11,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, role')
+    .select('role')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   if (profile?.role !== 'admin') redirect('/dashboard')
 
-  const displayName = profile?.full_name || user.email?.split('@')[0] || 'Admin'
+  const displayName = user.email?.split('@')[0] || 'Admin'
   const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
 
   return (

@@ -19,7 +19,7 @@ export default async function PortalLayout({ children }: { children: React.React
     .from('profiles')
     .select('plan, avatar_url, role')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   const displayName = user.email?.split('@')[0] || 'User'
   const plan = profile?.plan || 'free'
