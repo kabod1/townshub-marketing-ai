@@ -17,11 +17,21 @@ export async function POST(request: NextRequest) {
     .eq("id", user.id)
     .single();
 
-  if (!profile) {
-    return NextResponse.json({ error: "Profile not found.", code: "profile_missing" }, { status: 403 });
+  // If profile missing (trigger may have failed), create it on the fly
+  let activeProfile = profile
+  if (!activeProfile) {
+    const { data: newProfile } = await supabase
+      .from("profiles")
+      .upsert({ id: user.id, plan: "free", generations_used: 0, generations_limit: 1, role: "user" }, { onConflict: "id" })
+      .select("plan, generations_used, generations_limit")
+      .single()
+    if (!newProfile) {
+      return NextResponse.json({ error: "Could not create profile. Please try again.", code: "profile_error" }, { status: 500 });
+    }
+    activeProfile = newProfile
   }
 
-  if (profile.generations_limit < 99999 && profile.generations_used >= profile.generations_limit) {
+  if (activeProfile.generations_limit < 99999 && activeProfile.generations_used >= activeProfile.generations_limit) {
     return NextResponse.json({ error: "Generation limit reached. Upgrade your plan to continue.", code: "limit_reached" }, { status: 403 });
   }
 
@@ -46,7 +56,7 @@ export async function POST(request: NextRequest) {
       await Promise.all([
         supabase
           .from("profiles")
-          .update({ generations_used: profile.generations_used + 1 })
+          .update({ generations_used: activeProfile.generations_used + 1 })
           .eq("id", user.id),
         supabase.from("content_history").insert({
           user_id: user.id,

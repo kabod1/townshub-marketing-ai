@@ -188,7 +188,10 @@ export default function Home() {
   const checkSubscription = () => {
     if (profileLoading) return false;
     if (!authUser) { setShowGate(true); return false; }
+    // Authenticated user: if profile is still null, let the server decide
+    if (!userProfile) return true;
     if (isSubscribed || isFreeWithUsage) return true;
+    // Profile loaded, free plan, limit reached → show gate
     setShowGate(true);
     return false;
   };
@@ -232,6 +235,8 @@ export default function Home() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const [generateError, setGenerateError] = useState<string | null>(null);
+
   const handleGenerate = async () => {
     if (!checkSubscription()) return;
     if (!topic.trim()) return;
@@ -240,6 +245,7 @@ export default function Home() {
     setContentResult(null);
     setSelectedContent(null);
     setDistributionResult(null);
+    setGenerateError(null);
 
     try {
       const response = await fetch("/api/content", {
@@ -250,10 +256,25 @@ export default function Home() {
 
       const data = await response.json();
       if (data.success) {
+        // Refresh profile so generation count updates on client
+        if (authUser) {
+          const supabase = createClient();
+          supabase.auth.getUser().then(({ data: { user } }) => {
+            if (user) {
+              supabase.from("profiles").select("plan,generations_used,generations_limit").eq("id", user.id).single()
+                .then(({ data: p }) => { if (p) setUserProfile(p); });
+            }
+          });
+        }
         setContentResult(data);
+      } else if (data.code === "limit_reached") {
+        setShowGate(true);
+      } else {
+        setGenerateError(data.error || "Generation failed. Please try again.");
       }
     } catch (error) {
       console.error("Generation error:", error);
+      setGenerateError("Something went wrong. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -626,6 +647,10 @@ export default function Home() {
                     </>
                   )}
                 </button>
+
+                {generateError && (
+                  <p className="text-red-500 text-sm mt-3 text-center">{generateError}</p>
+                )}
               </div>
             </div>
 
