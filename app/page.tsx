@@ -272,6 +272,9 @@ export default function Home() {
           });
         }
         setContentResult(data);
+        // Auto-distribute immediately after generation
+        setActiveTab("distribute");
+        await runDistribute(data.content, data.topic);
       } else if (data.code === "limit_reached") {
         setShowGate(true);
       } else {
@@ -285,33 +288,28 @@ export default function Home() {
     }
   };
 
-  const handleDistribute = async () => {
-    if (!checkAuth()) return;
-    if (!contentResult?.content) return;
-
+  const runDistribute = async (content: string, topic: string) => {
     setIsDistributing(true);
     setDistributionResult(null);
-
     try {
       const response = await fetch("/api/distribute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: contentResult.content,
-          platforms: selectedCategories,
-          topic: contentResult.topic,
-        }),
+        body: JSON.stringify({ content, platforms: selectedCategories, topic }),
       });
-
       const data = await response.json();
-      if (data.success) {
-        setDistributionResult(data);
-      }
+      if (data.success) setDistributionResult(data);
     } catch (error) {
       console.error("Distribution error:", error);
     } finally {
       setIsDistributing(false);
     }
+  };
+
+  const handleDistribute = async () => {
+    if (!checkAuth()) return;
+    if (!contentResult?.content) return;
+    await runDistribute(contentResult.content, contentResult.topic);
   };
 
   const toggleCategory = (key: string) => {
