@@ -182,11 +182,15 @@ export default function Home() {
   }, []);
 
   const isSubscribed = !profileLoading && !!userProfile && userProfile.plan !== "free";
+  const isFreeWithUsage = !profileLoading && !!userProfile && userProfile.plan === "free" &&
+    userProfile.generations_used < userProfile.generations_limit;
 
   const checkSubscription = () => {
     if (profileLoading) return false;
-    if (!authUser || !isSubscribed) { setShowGate(true); return false; }
-    return true;
+    if (!authUser) { setShowGate(true); return false; }
+    if (isSubscribed || isFreeWithUsage) return true;
+    setShowGate(true);
+    return false;
   };
 
   const [topic, setTopic] = useState("");
@@ -1116,22 +1120,27 @@ export default function Home() {
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-accent-purple flex items-center justify-center mx-auto mb-4">
                 <Lock className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Unlock TownsHub</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                {authUser ? "Free generation used" : "Unlock TownsHub"}
+              </h3>
               <p className="text-slate-500 text-sm mb-6 max-w-xs mx-auto">
-                Generate content across 16 formats and distribute to 300+ platforms.
-                Start free — no credit card needed.
+                {authUser
+                  ? "You've used your 1 free generation. Upgrade to keep creating content."
+                  : "Generate content across 16 formats and distribute to 300+ platforms. Start free — no credit card needed."}
               </p>
 
-              {/* Free plan highlight */}
-              <Link
-                href={authUser ? "/pricing" : "/register?plan=free"}
-                onClick={() => setShowGate(false)}
-                className="block w-full mb-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl px-5 py-4 text-center transition-all shadow-lg shadow-emerald-500/20"
-              >
-                <div className="text-xs font-semibold uppercase tracking-widest opacity-80 mb-0.5">{authUser ? "Free Plan" : "Try Free"}</div>
-                <div className="text-xl font-bold">$0 <span className="text-sm font-normal opacity-80">· 1 generation</span></div>
-                <div className="text-xs opacity-70 mt-0.5">{authUser ? "1 generation included with your account" : "No credit card required"}</div>
-              </Link>
+              {/* Free plan highlight — only for guests */}
+              {!authUser && (
+                <Link
+                  href="/register?plan=free"
+                  onClick={() => setShowGate(false)}
+                  className="block w-full mb-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl px-5 py-4 text-center transition-all shadow-lg shadow-emerald-500/20"
+                >
+                  <div className="text-xs font-semibold uppercase tracking-widest opacity-80 mb-0.5">Try Free</div>
+                  <div className="text-xl font-bold">$0 <span className="text-sm font-normal opacity-80">· 1 generation</span></div>
+                  <div className="text-xs opacity-70 mt-0.5">No credit card required</div>
+                </Link>
+              )}
 
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
