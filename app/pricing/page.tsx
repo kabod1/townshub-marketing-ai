@@ -4,9 +4,30 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Check, Star, Rocket, Building2, ArrowRight, Loader2 } from 'lucide-react'
+import { Check, Star, Rocket, Building2, ArrowRight, Loader2, Sparkles } from 'lucide-react'
 
 const PLANS = [
+  {
+    key: 'free',
+    name: 'Free',
+    monthlyPrice: 0,
+    yearlyMonthly: 0,
+    yearlyTotal: 0,
+    icon: Sparkles,
+    color: 'from-slate-400 to-slate-500',
+    border: 'border-white/10',
+    badge: null,
+    description: 'Try TownsHub with no credit card required.',
+    generations: 1,
+    formats: 4,
+    features: [
+      '1 content generation',
+      '4 content formats',
+      'Article & Blog post',
+      'Social media posts (2 platforms)',
+      'No credit card required',
+    ],
+  },
   {
     key: 'starter',
     name: 'Starter',
@@ -86,6 +107,11 @@ export default function PricingPage() {
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe')
 
   async function handleGetStarted(planKey: string) {
+    if (planKey === 'free') {
+      router.push('/register?plan=free')
+      return
+    }
+
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -188,24 +214,33 @@ export default function PricingPage() {
         </div>
 
         {/* Plans grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {PLANS.map((plan) => {
             const Icon = plan.icon
+            const isFree = plan.key === 'free'
             const displayPrice = billing === 'yearly' ? plan.yearlyMonthly : plan.monthlyPrice
-            const savings = Math.round(((plan.monthlyPrice - plan.yearlyMonthly) / plan.monthlyPrice) * 100)
+            const savings = plan.monthlyPrice > 0 ? Math.round(((plan.monthlyPrice - plan.yearlyMonthly) / plan.monthlyPrice) * 100) : 0
 
             return (
               <div
                 key={plan.key}
-                className={`relative bg-white/5 backdrop-blur-xl border ${plan.border} rounded-2xl p-8 flex flex-col ${plan.badge === 'Most Popular' ? 'ring-2 ring-sky-500/50 scale-105' : ''}`}
+                className={`relative bg-white/5 backdrop-blur-xl border ${plan.border} rounded-2xl p-8 flex flex-col ${
+                  plan.badge === 'Most Popular' ? 'ring-2 ring-sky-500/50 scale-105' :
+                  isFree ? 'ring-1 ring-emerald-500/30' : ''
+                }`}
               >
                 {plan.badge && (
                   <div className={`absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r ${plan.color} text-white text-xs font-bold px-4 py-1 rounded-full`}>
                     {plan.badge}
                   </div>
                 )}
+                {isFree && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
+                    Start for Free
+                  </div>
+                )}
 
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${plan.color} flex items-center justify-center mb-4`}>
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${isFree ? 'from-emerald-400 to-teal-500' : plan.color} flex items-center justify-center mb-4`}>
                   <Icon className="w-6 h-6 text-white" />
                 </div>
 
@@ -213,42 +248,54 @@ export default function PricingPage() {
                 <p className="text-slate-400 text-sm mb-6">{plan.description}</p>
 
                 <div className="mb-2">
-                  <div className="flex items-end gap-2">
-                    <span className="text-4xl font-bold text-white">${displayPrice}</span>
-                    <span className="text-slate-400 text-sm mb-1">/month</span>
-                    {billing === 'yearly' && (
-                      <span className="mb-1 text-xs font-semibold text-sky-400 bg-sky-500/10 border border-sky-500/20 rounded-full px-2 py-0.5">
-                        -{savings}%
-                      </span>
-                    )}
-                  </div>
-                  {billing === 'yearly' ? (
-                    <p className="text-slate-500 text-xs mt-1">
-                      Billed ${plan.yearlyTotal.toLocaleString()}/yr &nbsp;·&nbsp;
-                      <span className="line-through text-slate-600">${plan.monthlyPrice}/mo</span>
-                    </p>
+                  {isFree ? (
+                    <>
+                      <div className="flex items-end gap-2">
+                        <span className="text-4xl font-bold text-white">$0</span>
+                        <span className="text-slate-400 text-sm mb-1">/forever</span>
+                      </div>
+                      <p className="text-emerald-400 text-xs mt-1 font-medium">No credit card required</p>
+                    </>
                   ) : (
-                    <p className="text-slate-500 text-xs mt-1">
-                      Or{' '}
-                      <button
-                        onClick={() => setBilling('yearly')}
-                        className="text-sky-400 hover:text-sky-300 font-medium underline-offset-2 hover:underline"
-                      >
-                        ${plan.yearlyMonthly}/mo billed annually
-                      </button>
-                      {' '}— save {YEARLY_SAVINGS_PCT}%
-                    </p>
+                    <>
+                      <div className="flex items-end gap-2">
+                        <span className="text-4xl font-bold text-white">${displayPrice}</span>
+                        <span className="text-slate-400 text-sm mb-1">/month</span>
+                        {billing === 'yearly' && (
+                          <span className="mb-1 text-xs font-semibold text-sky-400 bg-sky-500/10 border border-sky-500/20 rounded-full px-2 py-0.5">
+                            -{savings}%
+                          </span>
+                        )}
+                      </div>
+                      {billing === 'yearly' ? (
+                        <p className="text-slate-500 text-xs mt-1">
+                          Billed ${plan.yearlyTotal.toLocaleString()}/yr &nbsp;·&nbsp;
+                          <span className="line-through text-slate-600">${plan.monthlyPrice}/mo</span>
+                        </p>
+                      ) : (
+                        <p className="text-slate-500 text-xs mt-1">
+                          Or{' '}
+                          <button
+                            onClick={() => setBilling('yearly')}
+                            className="text-sky-400 hover:text-sky-300 font-medium underline-offset-2 hover:underline"
+                          >
+                            ${plan.yearlyMonthly}/mo billed annually
+                          </button>
+                          {' '}— save {YEARLY_SAVINGS_PCT}%
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
 
                 <div className="text-xs text-slate-500 mt-4 mb-6 pb-6 border-b border-white/10">
-                  {plan.generations === -1 ? 'Unlimited generations' : `${plan.generations} content generations/mo`} · {plan.formats} formats
+                  {plan.generations === -1 ? 'Unlimited generations' : `${plan.generations} content generation${plan.generations !== 1 ? 's' : ''}${isFree ? '' : '/mo'}`} · {plan.formats} formats
                 </div>
 
                 <ul className="space-y-3 flex-1 mb-8">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm text-slate-300">
-                      <Check className="w-4 h-4 text-sky-400 mt-0.5 flex-shrink-0" />
+                      <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isFree ? 'text-emerald-400' : 'text-sky-400'}`} />
                       {f}
                     </li>
                   ))}
@@ -258,13 +305,19 @@ export default function PricingPage() {
                   onClick={() => handleGetStarted(plan.key)}
                   disabled={loading === plan.key}
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all disabled:opacity-60 ${
-                    plan.badge === 'Most Popular'
+                    isFree
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600'
+                      : plan.badge === 'Most Popular'
                       ? 'bg-gradient-to-r from-sky-500 to-cyan-500 text-white hover:from-sky-600 hover:to-cyan-600'
                       : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
                   }`}
                 >
                   {loading === plan.key ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : isFree ? (
+                    <>
+                      Try It Free <Sparkles className="w-4 h-4" />
+                    </>
                   ) : (
                     <>
                       Get Started <ArrowRight className="w-4 h-4" />
@@ -280,8 +333,8 @@ export default function PricingPage() {
         <div className="text-center mt-12">
           <p className="text-slate-400 text-sm">
             Not ready to commit?{' '}
-            <Link href="/" className="text-sky-400 hover:text-sky-300">
-              Try the free plan — 5 generations included.
+            <Link href="/register?plan=free" className="text-emerald-400 hover:text-emerald-300 font-medium">
+              Start free — 1 generation, no card needed.
             </Link>
           </p>
         </div>
