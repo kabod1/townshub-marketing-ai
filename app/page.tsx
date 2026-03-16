@@ -1116,11 +1116,25 @@ export default function Home() {
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-accent-purple flex items-center justify-center mx-auto mb-4">
                 <Lock className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Subscribe to Access</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Unlock TownsHub</h3>
               <p className="text-slate-500 text-sm mb-6 max-w-xs mx-auto">
                 Generate content across 16 formats and distribute to 300+ platforms.
-                Subscribe to unlock all tools.
+                Start free — no credit card needed.
               </p>
+
+              {/* Free plan highlight */}
+              {!authUser && (
+                <Link
+                  href="/register?plan=free"
+                  onClick={() => setShowGate(false)}
+                  className="block w-full mb-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl px-5 py-4 text-center transition-all shadow-lg shadow-emerald-500/20"
+                >
+                  <div className="text-xs font-semibold uppercase tracking-widest opacity-80 mb-0.5">Try Free</div>
+                  <div className="text-xl font-bold">$0 <span className="text-sm font-normal opacity-80">· 1 generation</span></div>
+                  <div className="text-xs opacity-70 mt-0.5">No credit card required</div>
+                </Link>
+              )}
+
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
                   { name: "Starter", price: "$44", color: "from-slate-500 to-slate-600", popular: false },
@@ -1137,24 +1151,13 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                {!authUser && (
-                  <Link
-                    href="/register"
-                    onClick={() => setShowGate(false)}
-                    className="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
-                  >
-                    Create Account
-                  </Link>
-                )}
-                <Link
-                  href="/pricing"
-                  onClick={() => setShowGate(false)}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-500 to-accent-purple text-white text-sm font-semibold hover:shadow-lg hover:shadow-brand-500/25 transition-all"
-                >
-                  View Plans & Subscribe →
-                </Link>
-              </div>
+              <Link
+                href="/pricing"
+                onClick={() => setShowGate(false)}
+                className="block w-full px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-500 to-accent-purple text-white text-sm font-semibold hover:shadow-lg hover:shadow-brand-500/25 transition-all text-center"
+              >
+                View All Plans & Subscribe →
+              </Link>
               {authUser && (
                 <p className="text-xs text-slate-400 mt-4">
                   Signed in as {authUser.email} ·{" "}
