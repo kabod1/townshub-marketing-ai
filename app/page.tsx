@@ -1121,10 +1121,10 @@ export default function Home() {
                 <Lock className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                {authUser ? "Free generation used" : "Unlock TownsHub"}
+                {authUser && userProfile ? "Free generation used" : "Unlock TownsHub"}
               </h3>
               <p className="text-slate-500 text-sm mb-6 max-w-xs mx-auto">
-                {authUser
+                {authUser && userProfile
                   ? "You've used your 1 free generation. Upgrade to keep creating content."
                   : "Generate content across 16 formats and distribute to 300+ platforms. Start free — no credit card needed."}
               </p>

@@ -17,12 +17,12 @@ export async function POST(request: NextRequest) {
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.plan === "free") {
-    return NextResponse.json({ error: "Subscription required to access this feature.", code: "subscription_required" }, { status: 403 });
+  if (!profile) {
+    return NextResponse.json({ error: "Profile not found.", code: "profile_missing" }, { status: 403 });
   }
 
   if (profile.generations_limit < 99999 && profile.generations_used >= profile.generations_limit) {
-    return NextResponse.json({ error: "Monthly generation limit reached. Upgrade your plan.", code: "limit_reached" }, { status: 403 });
+    return NextResponse.json({ error: "Generation limit reached. Upgrade your plan to continue.", code: "limit_reached" }, { status: 403 });
   }
 
   try {
