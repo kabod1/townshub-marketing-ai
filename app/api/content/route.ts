@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_BASE_URL || "https://admin17257.n8n-wsk.com/webhook";
 
@@ -17,10 +18,11 @@ export async function POST(request: NextRequest) {
     .eq("id", user.id)
     .single();
 
-  // If profile missing (trigger may have failed), create it on the fly
+  // If profile missing (trigger may have failed), create it via service role (bypasses RLS)
   let activeProfile = profile
   if (!activeProfile) {
-    const { data: newProfile } = await supabase
+    const admin = createAdminClient()
+    const { data: newProfile } = await admin
       .from("profiles")
       .upsert({ id: user.id, plan: "free", generations_used: 0, generations_limit: 1, role: "user" }, { onConflict: "id" })
       .select("plan, generations_used, generations_limit")
