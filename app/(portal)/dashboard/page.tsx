@@ -34,7 +34,7 @@ export default async function DashboardPage() {
   const subscription = subRes.data
 
   const used = profile?.generations_used ?? 0
-  const limit = profile?.generations_limit ?? 5
+  const limit = profile?.generations_limit ?? 1
   const plan = profile?.plan ?? 'free'
   const usagePct = limit >= 99999 ? 100 : Math.min(100, Math.round((used / limit) * 100))
 
