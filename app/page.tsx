@@ -1123,17 +1123,15 @@ export default function Home() {
               </p>
 
               {/* Free plan highlight */}
-              {!authUser && (
-                <Link
-                  href="/register?plan=free"
-                  onClick={() => setShowGate(false)}
-                  className="block w-full mb-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl px-5 py-4 text-center transition-all shadow-lg shadow-emerald-500/20"
-                >
-                  <div className="text-xs font-semibold uppercase tracking-widest opacity-80 mb-0.5">Try Free</div>
-                  <div className="text-xl font-bold">$0 <span className="text-sm font-normal opacity-80">· 1 generation</span></div>
-                  <div className="text-xs opacity-70 mt-0.5">No credit card required</div>
-                </Link>
-              )}
+              <Link
+                href={authUser ? "/pricing" : "/register?plan=free"}
+                onClick={() => setShowGate(false)}
+                className="block w-full mb-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl px-5 py-4 text-center transition-all shadow-lg shadow-emerald-500/20"
+              >
+                <div className="text-xs font-semibold uppercase tracking-widest opacity-80 mb-0.5">{authUser ? "Free Plan" : "Try Free"}</div>
+                <div className="text-xl font-bold">$0 <span className="text-sm font-normal opacity-80">· 1 generation</span></div>
+                <div className="text-xs opacity-70 mt-0.5">{authUser ? "1 generation included with your account" : "No credit card required"}</div>
+              </Link>
 
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
