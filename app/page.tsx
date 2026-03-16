@@ -185,15 +185,20 @@ export default function Home() {
   const isFreeWithUsage = !profileLoading && !!userProfile && userProfile.plan === "free" &&
     userProfile.generations_used < userProfile.generations_limit;
 
+  // Used only for content GENERATION — checks generation limit
   const checkSubscription = () => {
     if (profileLoading) return false;
     if (!authUser) { setShowGate(true); return false; }
-    // Authenticated user: if profile is still null, let the server decide
-    if (!userProfile) return true;
+    if (!userProfile) return true; // let server decide if profile not loaded
     if (isSubscribed || isFreeWithUsage) return true;
-    // Profile loaded, free plan, limit reached → show gate
     setShowGate(true);
     return false;
+  };
+
+  // Used for distribute / podcast / PR — only requires login, not generation quota
+  const checkAuth = () => {
+    if (!authUser) { setShowGate(true); return false; }
+    return true;
   };
 
   const [topic, setTopic] = useState("");
@@ -281,7 +286,7 @@ export default function Home() {
   };
 
   const handleDistribute = async () => {
-    if (!checkSubscription()) return;
+    if (!checkAuth()) return;
     if (!contentResult?.content) return;
 
     setIsDistributing(true);
@@ -330,7 +335,7 @@ export default function Home() {
   };
 
   const handlePodcast = async () => {
-    if (!checkSubscription()) return;
+    if (!checkAuth()) return;
     if (!contentResult?.content) return;
 
     setIsPodcastLoading(true);
@@ -360,7 +365,7 @@ export default function Home() {
   };
 
   const handlePR = async () => {
-    if (!checkSubscription()) return;
+    if (!checkAuth()) return;
     if (!contentResult?.content) return;
 
     setIsPRLoading(true);
