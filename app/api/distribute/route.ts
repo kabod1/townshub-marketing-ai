@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.plan === "free") {
-    return NextResponse.json({ error: "Subscription required to access this feature.", code: "subscription_required" }, { status: 403 });
+  if (!profile) {
+    return NextResponse.json({ error: "Authentication required", code: "auth_required" }, { status: 401 });
   }
 
   try {
