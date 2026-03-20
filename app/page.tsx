@@ -213,6 +213,7 @@ export default function Home() {
   // Distribution state
   const [isDistributing, setIsDistributing] = useState(false);
   const [distributionResult, setDistributionResult] = useState<DistributionResult | null>(null);
+  const [distributionError, setDistributionError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["all"]);
 
   // Podcast state
@@ -288,9 +289,10 @@ export default function Home() {
     }
   };
 
-  const runDistribute = async (content: string, topic: string) => {
+  const runDistribute = async (content: unknown, topic: string) => {
     setIsDistributing(true);
     setDistributionResult(null);
+    setDistributionError(null);
     try {
       const response = await fetch("/api/distribute", {
         method: "POST",
@@ -298,9 +300,14 @@ export default function Home() {
         body: JSON.stringify({ content, platforms: selectedCategories, topic }),
       });
       const data = await response.json();
-      if (data.success) setDistributionResult(data);
+      if (data.success) {
+        setDistributionResult(data);
+      } else {
+        setDistributionError(data.error || "Distribution failed. Please try again.");
+      }
     } catch (error) {
       console.error("Distribution error:", error);
+      setDistributionError("Distribution failed. Please try again.");
     } finally {
       setIsDistributing(false);
     }
@@ -825,6 +832,9 @@ export default function Home() {
                       </>
                     )}
                   </button>
+                  {distributionError && (
+                    <p className="text-red-500 text-sm mt-3">{distributionError}</p>
+                  )}
                 </>
               )}
             </div>

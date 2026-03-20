@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_BASE_URL || "https://admin17257.n8n-wsk.com/webhook";
 
@@ -15,10 +16,15 @@ export async function POST(request: NextRequest) {
     .from("profiles")
     .select("plan")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!profile) {
-    return NextResponse.json({ error: "Authentication required", code: "auth_required" }, { status: 401 });
+    // Profile missing — create via service role and allow distribution
+    const admin = createAdminClient();
+    await admin.from("profiles").upsert(
+      { id: user.id, plan: "free", generations_used: 1, generations_limit: 1, role: "user" },
+      { onConflict: "id" }
+    );
   }
 
   try {
