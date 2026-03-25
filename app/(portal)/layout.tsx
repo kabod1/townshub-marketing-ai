@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { LayoutDashboard, Wand2, User, CreditCard, LogOut, Rocket, ShieldCheck } from 'lucide-react'
 
 const navItems = [
@@ -15,7 +16,9 @@ export default async function PortalLayout({ children }: { children: React.React
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  // Use service role client to bypass RLS — ensures admin flag always loads correctly
+  const adminDb = createAdminClient()
+  const { data: profile } = await adminDb
     .from('profiles')
     .select('plan, avatar_url, role')
     .eq('id', user.id)
