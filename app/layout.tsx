@@ -6,7 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://townshub-app.vercel.app";
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://townshub-app.vercel.app").trim();
 
 export const metadata: Metadata = {
   title: "TownsHub Marketing AI",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     siteName: "TownsHub",
     images: [
       {
-        url: "/logo.png",
+        url: `${APP_URL}/logo.png`,
         width: 1000,
         height: 1000,
         alt: "TownsHub Marketing AI",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "TownsHub Marketing AI",
     description: "AI-powered content amplification platform - Generate and distribute content across 300+ platforms",
-    images: ["/logo.png"],
+    images: [`${APP_URL}/logo.png`],
   },
 };
 
