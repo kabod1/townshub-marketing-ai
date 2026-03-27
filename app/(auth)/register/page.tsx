@@ -29,6 +29,7 @@ function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
@@ -49,6 +50,7 @@ function RegisterForm() {
     e.preventDefault()
     if (password !== confirmPassword) { setError('Passwords do not match'); return }
     if (password.length < 8) { setError('Password must be at least 8 characters'); return }
+    if (!agreedToTerms) { setError('You must agree to the Terms of Service and Privacy Policy'); return }
     setLoading(true)
     setError('')
 
@@ -193,20 +195,31 @@ function RegisterForm() {
           </div>
         </div>
 
+        <div className="flex items-start gap-3 mt-2">
+          <input
+            type="checkbox"
+            id="terms"
+            checked={agreedToTerms}
+            onChange={e => setAgreedToTerms(e.target.checked)}
+            className="mt-0.5 w-4 h-4 rounded border-white/20 bg-white/5 text-sky-500 focus:ring-sky-500 cursor-pointer shrink-0"
+          />
+          <label htmlFor="terms" className="text-xs text-slate-400 leading-relaxed cursor-pointer">
+            I agree to TownsHub&apos;s{' '}
+            <Link href="/terms" target="_blank" className="text-sky-400 hover:underline">Terms of Service</Link>
+            {' '}and{' '}
+            <Link href="/privacy" target="_blank" className="text-sky-400 hover:underline">Privacy Policy</Link>.
+            I confirm I am 18 years of age or older.
+          </label>
+        </div>
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !agreedToTerms}
           className="w-full bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-semibold py-3 rounded-xl hover:from-sky-600 hover:to-cyan-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
         >
           {loading ? 'Creating account...' : 'Create Free Account'}
         </button>
       </form>
-
-      <p className="text-center text-xs text-slate-500 mt-4">
-        By creating an account you agree to our{' '}
-        <span className="text-sky-400 cursor-pointer">Terms of Service</span> and{' '}
-        <span className="text-sky-400 cursor-pointer">Privacy Policy</span>.
-      </p>
 
       <p className="text-center text-sm text-slate-400 mt-4">
         Already have an account?{' '}

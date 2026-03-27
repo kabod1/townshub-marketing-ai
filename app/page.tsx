@@ -1140,6 +1140,19 @@ export default function Home() {
             )}
           </div>
         )}
+
+      {/* Footer */}
+      <footer className="border-t border-slate-200/60 mt-12 py-8 px-4 sm:px-6 bg-slate-50">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+          <p>© {new Date().getFullYear()} TownsHub Limited. All rights reserved.</p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link href="/privacy" className="hover:text-slate-600 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-slate-600 transition-colors">Terms of Service</Link>
+            <Link href="/cookies" className="hover:text-slate-600 transition-colors">Cookie Policy</Link>
+            <a href="mailto:support@townshub.com" className="hover:text-slate-600 transition-colors">Contact</a>
+          </div>
+        </div>
+      </footer>
       </main>
 
       {/* Subscription Gate Modal */}
