@@ -13,9 +13,9 @@ export const metadata: Metadata = {
   description: "AI-powered content amplification platform - Generate and distribute content across 300+ platforms",
   metadataBase: new URL(APP_URL),
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
-    shortcut: "/logo.png",
+    icon: "/icon.png",
+    apple: "/icon.png",
+    shortcut: "/icon.png",
   },
   openGraph: {
     title: "TownsHub Marketing AI",
