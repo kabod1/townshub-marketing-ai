@@ -104,7 +104,6 @@ export default function PricingPage() {
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly')
-  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe')
 
   async function handleGetStarted(planKey: string) {
     if (planKey === 'free') {
@@ -122,25 +121,14 @@ export default function PricingPage() {
 
     setLoading(planKey)
 
-    if (paymentMethod === 'stripe') {
-      const res = await fetch('/api/payments/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: planKey, interval: billing === 'yearly' ? 'year' : 'month' }),
-      })
-      const data = await res.json()
-      if (data.url) window.location.href = data.url
-      else setLoading(null)
-    } else {
-      const res = await fetch('/api/payments/create-paypal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: planKey }),
-      })
-      const data = await res.json()
-      if (data.approvalUrl) window.location.href = data.approvalUrl
-      else setLoading(null)
-    }
+    const res = await fetch('/api/payments/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: planKey, interval: billing === 'yearly' ? 'year' : 'month' }),
+    })
+    const data = await res.json()
+    if (data.url) window.location.href = data.url
+    else setLoading(null)
   }
 
   return (
@@ -192,24 +180,6 @@ export default function PricingPage() {
                 Save up to {YEARLY_SAVINGS_PCT}%
               </span>
             )}
-          </div>
-        </div>
-
-        {/* Payment method toggle */}
-        <div className="flex justify-center mb-12">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-1 inline-flex gap-1">
-            <button
-              onClick={() => setPaymentMethod('stripe')}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${paymentMethod === 'stripe' ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'}`}
-            >
-              Pay with Card
-            </button>
-            <button
-              onClick={() => setPaymentMethod('paypal')}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${paymentMethod === 'paypal' ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'}`}
-            >
-              Pay with PayPal
-            </button>
           </div>
         </div>
 
@@ -343,7 +313,7 @@ export default function PricingPage() {
         <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           {[
             { title: 'No contracts', desc: 'Cancel or change plans anytime. No questions asked.' },
-            { title: 'Secure payments', desc: 'Powered by Stripe and PayPal — industry-leading security.' },
+            { title: 'Secure payments', desc: 'Powered by Stripe — industry-leading payment security.' },
             { title: '14-day guarantee', desc: 'Not satisfied? Get a full refund within 14 days.' },
           ].map((item) => (
             <div key={item.title} className="bg-white/5 border border-white/10 rounded-xl p-6">

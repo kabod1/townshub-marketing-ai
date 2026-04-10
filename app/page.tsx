@@ -146,17 +146,17 @@ const contentTypes = [
 
 // Distribution platform categories
 const distributionCategories = [
-  { key: "social", label: "Social Media", icon: Share2, color: "from-blue-500 to-cyan-500", count: 25 },
-  { key: "blogs", label: "Blogging", icon: BookOpen, color: "from-indigo-500 to-purple-500", count: 35 },
-  { key: "video", label: "Video Platforms", icon: Video, color: "from-red-500 to-orange-500", count: 30 },
-  { key: "podcast", label: "Podcast Directories", icon: Mic, color: "from-purple-500 to-pink-500", count: 35 },
-  { key: "documents", label: "Document Sharing", icon: FileText, color: "from-emerald-500 to-teal-500", count: 25 },
-  { key: "news", label: "News & PR", icon: Newspaper, color: "from-rose-500 to-red-500", count: 50 },
-  { key: "news_aggregators", label: "News Aggregators", icon: Rss, color: "from-amber-500 to-orange-500", count: 25 },
-  { key: "email", label: "Email Marketing", icon: Mail, color: "from-green-500 to-emerald-500", count: 25 },
-  { key: "syndication", label: "Content Syndication", icon: Upload, color: "from-cyan-500 to-blue-500", count: 15 },
-  { key: "directories", label: "Business Directories", icon: Globe, color: "from-slate-500 to-zinc-500", count: 25 },
-  { key: "bookmarking", label: "Bookmarking", icon: BookOpen, color: "from-violet-500 to-purple-500", count: 15 },
+  { key: "social", label: "Social Media", icon: Share2, color: "from-blue-500 to-cyan-500", count: 25, apiReady: true, apiNote: "Twitter/X, LinkedIn, Facebook via API" },
+  { key: "blogs", label: "Blogging", icon: BookOpen, color: "from-indigo-500 to-purple-500", count: 35, apiReady: true, apiNote: "WordPress, Medium, Substack via API" },
+  { key: "video", label: "Video Platforms", icon: Video, color: "from-red-500 to-orange-500", count: 30, apiReady: false, apiNote: "Requires video file upload" },
+  { key: "podcast", label: "Podcast Directories", icon: Mic, color: "from-purple-500 to-pink-500", count: 35, apiReady: true, apiNote: "Auto-syncs via RSS feed once submitted" },
+  { key: "documents", label: "Document Sharing", icon: FileText, color: "from-emerald-500 to-teal-500", count: 25, apiReady: false, apiNote: "Manual upload required" },
+  { key: "news", label: "News & PR", icon: Newspaper, color: "from-rose-500 to-red-500", count: 50, apiReady: false, apiNote: "Manual submission or paid wire service" },
+  { key: "news_aggregators", label: "News Aggregators", icon: Rss, color: "from-amber-500 to-orange-500", count: 25, apiReady: true, apiNote: "Auto-syncs via RSS feed" },
+  { key: "email", label: "Email Marketing", icon: Mail, color: "from-green-500 to-emerald-500", count: 25, apiReady: true, apiNote: "Mailchimp, SendGrid, ConvertKit via API" },
+  { key: "syndication", label: "Content Syndication", icon: Upload, color: "from-cyan-500 to-blue-500", count: 15, apiReady: true, apiNote: "Auto-syndication via RSS/API" },
+  { key: "directories", label: "Business Directories", icon: Globe, color: "from-slate-500 to-zinc-500", count: 25, apiReady: false, apiNote: "Manual submission required" },
+  { key: "bookmarking", label: "Bookmarking", icon: BookOpen, color: "from-violet-500 to-purple-500", count: 15, apiReady: false, apiNote: "Manual submission required" },
 ];
 
 export default function Home() {
@@ -745,6 +745,21 @@ export default function Home() {
         {/* Distribute Tab */}
         {activeTab === "distribute" && (
           <div className="space-y-8">
+            {/* What this does banner */}
+            <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center mt-0.5">
+                <Globe className="w-4 h-4 text-sky-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-sky-900 mb-1">This generates your Distribution Plan</p>
+                <p className="text-sm text-sky-700">
+                  You get a tailored checklist of 300+ platforms matched to your content — with submission links and instructions for each.
+                  Categories marked <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded text-xs">API Ready</span> can be fully automated once credentials are added to your n8n instance.
+                  Others show step-by-step manual submission guides.
+                </p>
+              </div>
+            </div>
+
             {/* Distribution Panel */}
             <div className="glass rounded-3xl p-6 sm:p-8">
               <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
@@ -805,7 +820,14 @@ export default function Home() {
                               <cat.icon className="w-5 h-5 text-white" />
                             </div>
                             <div className="font-semibold text-slate-900 text-sm">{cat.label}</div>
-                            <div className="text-xs text-slate-500">{cat.count} platforms</div>
+                            <div className="text-xs text-slate-500 mb-2">{cat.count} platforms</div>
+                            <div className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                              cat.apiReady
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-slate-100 text-slate-500"
+                            }`}>
+                              {cat.apiReady ? "⚡ API Ready" : "✋ Manual"}
+                            </div>
                           </button>
                         );
                       })}
@@ -888,10 +910,15 @@ export default function Home() {
                   )}
                 </div>
 
-                <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                  <p className="text-sm text-amber-800">
-                    <strong>Note:</strong> This is a distribution plan. To publish content automatically, configure platform credentials in your n8n instance for each platform you want to automate.
-                  </p>
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                    <p className="text-sm font-semibold text-emerald-800 mb-1">⚡ API-Automatable Categories</p>
+                    <p className="text-xs text-emerald-700">Social Media, Blogging, Podcast Directories, Email Marketing, News Aggregators, and Content Syndication can be fully automated — add platform credentials to your n8n instance to enable.</p>
+                  </div>
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                    <p className="text-sm font-semibold text-slate-700 mb-1">✋ Manual Submission Required</p>
+                    <p className="text-xs text-slate-600">Video Platforms, Document Sharing, News & PR, Business Directories, and Bookmarking sites require manual upload. Each platform entry below includes a direct submission link.</p>
+                  </div>
                 </div>
               </div>
             )}
