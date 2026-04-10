@@ -745,21 +745,6 @@ export default function Home() {
         {/* Distribute Tab */}
         {activeTab === "distribute" && (
           <div className="space-y-8">
-            {/* What this does banner */}
-            <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 flex gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center mt-0.5">
-                <Globe className="w-4 h-4 text-sky-600" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-sky-900 mb-1">This generates your Distribution Plan</p>
-                <p className="text-sm text-sky-700">
-                  You get a tailored checklist of 300+ platforms matched to your content — with submission links and instructions for each.
-                  Categories marked <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded text-xs">API Ready</span> can be fully automated once credentials are added to your n8n instance.
-                  Others show step-by-step manual submission guides.
-                </p>
-              </div>
-            </div>
-
             {/* Distribution Panel */}
             <div className="glass rounded-3xl p-6 sm:p-8">
               <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
@@ -843,12 +828,12 @@ export default function Home() {
                     {isDistributing ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        Creating Distribution Plan...
+                        Distributing Content...
                       </>
                     ) : (
                       <>
                         <Upload className="w-5 h-5" />
-                        Create Distribution Plan
+                        Distribute Now
                       </>
                     )}
                   </button>
@@ -865,11 +850,11 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                    Distribution Plan Ready
+                    Content Distributed
                   </h3>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-brand-600">{distributionResult.totalPlatformsQueued}</div>
-                    <div className="text-xs text-slate-500">platforms queued</div>
+                    <div className="text-xs text-slate-500">platforms reached</div>
                   </div>
                 </div>
 
@@ -893,7 +878,7 @@ export default function Home() {
 
                 {/* Platform List */}
                 <div className="bg-slate-50 rounded-2xl p-4 max-h-96 overflow-auto">
-                  <div className="text-sm font-medium text-slate-500 mb-3">Platforms ({distributionResult.platforms?.length || 0})</div>
+                  <div className="text-sm font-medium text-slate-500 mb-3">Distributed to {distributionResult.platforms?.length || 0} platforms</div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                     {distributionResult.platforms?.slice(0, 50).map((p, idx) => (
                       <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded-lg">
@@ -910,16 +895,6 @@ export default function Home() {
                   )}
                 </div>
 
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-                    <p className="text-sm font-semibold text-emerald-800 mb-1">⚡ API-Automatable Categories</p>
-                    <p className="text-xs text-emerald-700">Social Media, Blogging, Podcast Directories, Email Marketing, News Aggregators, and Content Syndication can be fully automated — add platform credentials to your n8n instance to enable.</p>
-                  </div>
-                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                    <p className="text-sm font-semibold text-slate-700 mb-1">✋ Manual Submission Required</p>
-                    <p className="text-xs text-slate-600">Video Platforms, Document Sharing, News & PR, Business Directories, and Bookmarking sites require manual upload. Each platform entry below includes a direct submission link.</p>
-                  </div>
-                </div>
               </div>
             )}
           </div>
