@@ -22,21 +22,12 @@ export const metadata: Metadata = {
     description: "AI-powered content amplification platform - Generate and distribute content across 300+ platforms",
     url: APP_URL,
     siteName: "TownsHub",
-    images: [
-      {
-        url: `${APP_URL}/og-image.jpg`,
-        width: 1200,
-        height: 1200,
-        alt: "TownsHub Limited",
-      },
-    ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "TownsHub Marketing AI",
     description: "AI-powered content amplification platform - Generate and distribute content across 300+ platforms",
-    images: [`${APP_URL}/og-image.jpg`],
   },
 };
 
