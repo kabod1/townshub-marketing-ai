@@ -22,39 +22,26 @@ export default function Image() {
           fontFamily: 'sans-serif',
         }}
       >
-        {/* Logo */}
+        {/* Logo — large and dominant */}
         <img
           src={`${APP_URL}/og-image.jpg`}
-          width={420}
-          height={210}
-          style={{ objectFit: 'contain', borderRadius: '16px' }}
+          width={860}
+          height={430}
+          style={{ objectFit: 'contain', borderRadius: '20px' }}
         />
 
         {/* Tagline */}
         <div
           style={{
-            marginTop: '32px',
+            marginTop: '24px',
             color: '#94a3b8',
-            fontSize: '28px',
-            letterSpacing: '0.02em',
+            fontSize: '24px',
+            letterSpacing: '0.04em',
             textAlign: 'center',
           }}
         >
           AI-powered content amplification across 300+ platforms
         </div>
-
-        {/* Bottom accent */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '0',
-            left: '0',
-            right: '0',
-            height: '4px',
-            background: 'linear-gradient(90deg, #38bdf8, #06b6d4)',
-            display: 'flex',
-          }}
-        />
       </div>
     ),
     { width: 1200, height: 630 }
