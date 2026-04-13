@@ -1,8 +1,8 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'TownsHub Marketing AI'
-export const size = { width: 1200, height: 630 }
+export const alt = 'TownsHub Limited'
+export const size = { width: 1200, height: 1200 }
 export const contentType = 'image/png'
 
 export default function Image() {
@@ -13,37 +13,21 @@ export default function Image() {
       <div
         style={{
           width: '1200px',
-          height: '630px',
+          height: '1200px',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
-          fontFamily: 'sans-serif',
+          background: '#ffffff',
         }}
       >
-        {/* Logo — large and dominant */}
         <img
-          src={`${APP_URL}/og-image.jpg`}
-          width={860}
-          height={430}
-          style={{ objectFit: 'contain', borderRadius: '20px' }}
+          src={`${APP_URL}/og-logo-navy.jpg`}
+          width={900}
+          height={900}
+          style={{ objectFit: 'contain' }}
         />
-
-        {/* Tagline */}
-        <div
-          style={{
-            marginTop: '24px',
-            color: '#94a3b8',
-            fontSize: '24px',
-            letterSpacing: '0.04em',
-            textAlign: 'center',
-          }}
-        >
-          AI-powered content amplification across 300+ platforms
-        </div>
       </div>
     ),
-    { width: 1200, height: 630 }
+    { width: 1200, height: 1200 }
   )
 }

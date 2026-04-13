@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     type: "website",
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "TownsHub Marketing AI",
     description: "AI-powered content amplification platform - Generate and distribute content across 300+ platforms",
   },
