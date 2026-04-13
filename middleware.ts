@@ -1,12 +1,21 @@
-import { type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  try {
+    return await updateSession(request)
+  } catch {
+    // If Supabase middleware fails, allow the request through rather than 500ing
+    return NextResponse.next()
+  }
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|logo.png|icons|manifest.json|sw.js|workbox-.*\\.js).*)',
+    /*
+     * Only run middleware on routes that need auth.
+     * Exclude: static files, images, API routes, OG image, icons, service worker.
+     */
+    '/(dashboard|account|admin|login|register)(.*)',
   ],
 }
