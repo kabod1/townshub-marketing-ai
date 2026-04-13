@@ -5,57 +5,57 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const runtime = "edge";
 
-export default function Image() {
+export default async function Image() {
+  const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://townshub-app.vercel.app").trim();
+
+  // Fetch the real logo as base64 so Satori can embed it
+  const logoRes = await fetch(`${APP_URL}/og-logo.png`);
+  const logoBuffer = await logoRes.arrayBuffer();
+  const logoBytes = new Uint8Array(logoBuffer);
+  let binary = "";
+  for (let i = 0; i < logoBytes.byteLength; i++) {
+    binary += String.fromCharCode(logoBytes[i]);
+  }
+  const logoSrc = `data:image/png;base64,${btoa(binary)}`;
+
   return new ImageResponse(
     (
       <div
         style={{
-          background: "linear-gradient(135deg, #0f172a 0%, #0c2340 50%, #0f172a 100%)",
+          background: "linear-gradient(135deg, #0a1628 0%, #0e2244 50%, #0a1628 100%)",
           width: "100%",
           height: "100%",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          gap: "24px",
         }}
       >
-        {/* Logo mark */}
-        <div
-          style={{
-            background: "linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)",
-            borderRadius: "24px",
-            width: "96px",
-            height: "96px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: "28px",
-          }}
-        >
-          <span style={{ color: "white", fontSize: "42px", fontWeight: 900 }}>
-            TH
-          </span>
-        </div>
-
-        {/* Brand name */}
-        <div style={{ display: "flex", alignItems: "baseline", gap: "12px", marginBottom: "16px" }}>
-          <span style={{ color: "white", fontSize: "72px", fontWeight: 800 }}>
-            TownsHub
-          </span>
-          <span style={{ color: "#0ea5e9", fontSize: "32px", fontWeight: 700 }}>
-            Marketing AI
-          </span>
-        </div>
+        {/* Real logo */}
+        <img
+          src={logoSrc}
+          width={320}
+          height={320}
+          style={{ objectFit: "contain" }}
+        />
 
         {/* Tagline */}
-        <div style={{ display: "flex", marginBottom: "40px" }}>
-          <span style={{ color: "#94a3b8", fontSize: "28px", fontWeight: 400 }}>
+        <div style={{ display: "flex" }}>
+          <span
+            style={{
+              color: "#94a3b8",
+              fontSize: "26px",
+              fontWeight: 400,
+              letterSpacing: "0.5px",
+            }}
+          >
             One Topic. 16 Formats. 300+ Platforms.
           </span>
         </div>
 
         {/* Stats row */}
-        <div style={{ display: "flex", gap: "32px" }}>
+        <div style={{ display: "flex", gap: "24px", marginTop: "8px" }}>
           {[
             { value: "16", label: "Content Formats" },
             { value: "305+", label: "Platforms" },
@@ -66,18 +66,18 @@ export default function Image() {
               style={{
                 background: "rgba(255,255,255,0.07)",
                 border: "1px solid rgba(255,255,255,0.12)",
-                borderRadius: "16px",
-                padding: "16px 32px",
+                borderRadius: "14px",
+                padding: "12px 28px",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "4px",
+                gap: "2px",
               }}
             >
-              <span style={{ color: "#0ea5e9", fontSize: "28px", fontWeight: 800 }}>
+              <span style={{ color: "#38bdf8", fontSize: "24px", fontWeight: 800 }}>
                 {stat.value}
               </span>
-              <span style={{ color: "#64748b", fontSize: "16px", fontWeight: 500 }}>
+              <span style={{ color: "#64748b", fontSize: "14px", fontWeight: 500 }}>
                 {stat.label}
               </span>
             </div>
