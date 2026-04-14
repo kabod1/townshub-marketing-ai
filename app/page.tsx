@@ -858,54 +858,45 @@ export default function Home() {
             {/* Distribution Results */}
             {distributionResult && (
               <div className="glass rounded-3xl p-6 sm:p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                    Content Distributed
-                  </h3>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-brand-600">{distributionResult.totalPlatformsQueued}</div>
-                    <div className="text-xs text-slate-500">platforms reached</div>
-                  </div>
+                <div className="flex items-center gap-2 mb-4">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <h3 className="text-xl font-bold text-slate-900">Distribution Complete</h3>
                 </div>
 
-                {/* Category Breakdown */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-                  {distributionCategories.map((cat) => {
-                    const count = distributionResult.categoryCounts[cat.key as keyof typeof distributionResult.categoryCounts] || 0;
-                    if (count === 0) return null;
+                {/* Summary stats — works with both response shapes */}
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  {[
+                    { label: "Posted", value: (distributionResult as any)?.summary?.posted ?? (distributionResult as any)?.totalPlatformsQueued ?? 0, color: "text-emerald-600" },
+                    { label: "Skipped", value: (distributionResult as any)?.summary?.skipped ?? 0, color: "text-amber-600" },
+                    { label: "Failed", value: (distributionResult as any)?.summary?.failed ?? 0, color: "text-red-500" },
+                  ].map(s => (
+                    <div key={s.label} className="bg-slate-50 rounded-xl p-4 text-center">
+                      <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
+                      <div className="text-xs text-slate-500 mt-1">{s.label}</div>
+                    </div>
+                  ))}
+                </div>
 
-                    return (
-                      <div key={cat.key} className="bg-slate-50 rounded-xl p-4">
-                        <div className="flex items-center gap-2 mb-1">
-                          <cat.icon className="w-4 h-4 text-slate-500" />
-                          <span className="text-sm font-medium text-slate-700">{cat.label}</span>
+                {/* Message from workflow */}
+                {(distributionResult as any)?.message && (
+                  <p className="text-sm text-slate-600 bg-slate-50 rounded-xl p-3">
+                    {(distributionResult as any).message}
+                  </p>
+                )}
+
+                {/* Platform list if present */}
+                {(distributionResult as any)?.platforms?.length > 0 && (
+                  <div className="bg-slate-50 rounded-2xl p-4 max-h-64 overflow-auto mt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {(distributionResult as any).platforms.slice(0, 50).map((p: any, idx: number) => (
+                        <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded-lg">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                          <span className="text-sm text-slate-700 truncate">{p.platform}</span>
                         </div>
-                        <div className="text-2xl font-bold text-slate-900">{count}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Platform List */}
-                <div className="bg-slate-50 rounded-2xl p-4 max-h-96 overflow-auto">
-                  <div className="text-sm font-medium text-slate-500 mb-3">Distributed to {distributionResult.platforms?.length || 0} platforms</div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {distributionResult.platforms?.slice(0, 50).map((p, idx) => (
-                      <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded-lg">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                        <span className="text-sm text-slate-700 truncate">{p.platform}</span>
-                        <span className="text-xs text-slate-400 ml-auto">{p.contentType}</span>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                  {(distributionResult.platforms?.length || 0) > 50 && (
-                    <p className="text-center text-sm text-slate-500 mt-4">
-                      + {distributionResult.platforms!.length - 50} more platforms...
-                    </p>
-                  )}
-                </div>
-
+                )}
               </div>
             )}
           </div>
