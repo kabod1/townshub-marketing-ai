@@ -2,11 +2,12 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { LayoutDashboard, Wand2, User, CreditCard, LogOut, Rocket, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, Wand2, User, CreditCard, LogOut, Rocket, ShieldCheck, Clock } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/', label: 'Generate', icon: Wand2 },
+  { href: '/history', label: 'History', icon: Clock },
   { href: '/account', label: 'Account', icon: User },
 ]
 

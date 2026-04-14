@@ -176,9 +176,14 @@ export default async function DashboardPage() {
       <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
         <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-white/10">
           <h2 className="text-sm font-semibold text-white">Recent Content</h2>
-          <Link href="/" className="text-sky-400 hover:text-sky-300 text-xs flex items-center gap-1">
-            Generate new <ArrowUpRight className="w-3 h-3" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/history" className="text-slate-400 hover:text-white text-xs flex items-center gap-1">
+              View all <ArrowUpRight className="w-3 h-3" />
+            </Link>
+            <Link href="/" className="text-sky-400 hover:text-sky-300 text-xs flex items-center gap-1">
+              Generate new <ArrowUpRight className="w-3 h-3" />
+            </Link>
+          </div>
         </div>
         {history.length === 0 ? (
           <div className="text-center py-16">

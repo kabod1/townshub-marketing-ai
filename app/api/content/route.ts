@@ -67,6 +67,9 @@ export async function POST(request: NextRequest) {
           topic: body.topic,
           formats_count: 16,
           total_words: 0,
+          content: data.content,
+          brand_voice: body.brandVoice || "Professional yet approachable",
+          target_audience: body.targetAudience || "Business professionals and entrepreneurs",
         }),
         supabase.from("usage_events").insert({
           user_id: user.id,
