@@ -1,7 +1,11 @@
 {
   "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 60
-    }
+    "app/api/content/route.ts": { "maxDuration": 300 },
+    "app/api/distribute/route.ts": { "maxDuration": 300 },
+    "app/api/podcast/route.ts": { "maxDuration": 300 },
+    "app/api/pr/route.ts": { "maxDuration": 300 },
+    "app/api/chat/route.ts": { "maxDuration": 60 },
+    "app/api/payments/**/*.ts": { "maxDuration": 30 },
+    "app/api/webhooks/**/*.ts": { "maxDuration": 30 }
   }
 }
