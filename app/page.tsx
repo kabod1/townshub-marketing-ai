@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -160,7 +159,7 @@ const distributionCategories = [
   { key: "bookmarking", label: "Bookmarking", icon: BookOpen, color: "from-violet-500 to-purple-500", count: 15, apiReady: false, apiNote: "Manual submission required" },
 ];
 
-function HomeInner() {
+export default function Home() {
   const [authUser, setAuthUser] = useState<{ email: string } | null>(null);
   const [userProfile, setUserProfile] = useState<{ plan: string; generations_used: number; generations_limit: number } | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
@@ -202,10 +201,20 @@ function HomeInner() {
     return true;
   };
 
-  const searchParams = useSearchParams();
-  const [topic, setTopic] = useState(() => searchParams.get("topic") ?? "");
-  const [brandVoice, setBrandVoice] = useState(() => searchParams.get("voice") ?? "Professional yet approachable");
-  const [targetAudience, setTargetAudience] = useState(() => searchParams.get("audience") ?? "Business professionals and entrepreneurs");
+  const [topic, setTopic] = useState("");
+  const [brandVoice, setBrandVoice] = useState("Professional yet approachable");
+  const [targetAudience, setTargetAudience] = useState("Business professionals and entrepreneurs");
+
+  // Pre-fill form from URL params when coming from history "Edit" button
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get("topic");
+    const v = params.get("voice");
+    const a = params.get("audience");
+    if (t) setTopic(t);
+    if (v) setBrandVoice(v);
+    if (a) setTargetAudience(a);
+  }, []);
   const [isGenerating, setIsGenerating] = useState(false);
   const [contentResult, setContentResult] = useState<ContentResult | null>(null);
   const [selectedContent, setSelectedContent] = useState<string | null>(null);
@@ -1320,13 +1329,5 @@ function HomeInner() {
         />
       )}
     </div>
-  );
-}
-
-export default function Home() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-b from-slate-50 to-white" />}>
-      <HomeInner />
-    </Suspense>
   );
 }
